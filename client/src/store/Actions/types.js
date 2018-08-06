@@ -1,4 +1,4 @@
-export const ROOT_API = 'http://localhost:8080';
+export const ROOT_API = 'http://ec2-18-222-192-69.us-east-2.compute.amazonaws.com:8080';
 
 export const CLEAR_FIELD = "CLEAR_FIELD"
 
