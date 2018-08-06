@@ -25,3 +25,4 @@ pkg
 *.swp
 *.swo
 beego.iml
+env
