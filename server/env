@@ -1,0 +1,5 @@
+export GOAPP=server
+export GOPWD="tnis1234"
+export GOPWDRESET="tn12345"
+
+
