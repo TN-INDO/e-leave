@@ -1,0 +1,167 @@
+@import '~antd/dist/antd.css';
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-intro {
+  font-size: large;
+}
+
+.App-header {
+  background-color: #4abdcf;
+  height: 100px;
+  padding: 20px;
+  color: white;
+}
+
+.App-header h1 {
+  color: whitesmoke;
+}
+
+.App-content {
+  padding-top: 100px;
+  padding-bottom: 100px;
+}
+
+.App-footer {
+  background-color: black;
+  height: 64px;  
+  color: white;
+  justify-content: center;
+  align-items: center;
+  align-self: auto;
+}
+
+.Login-footer {
+  background-color: #4abdcf;
+  height: 100px;  
+  color: white;
+  justify-content: center;
+  align-items: center;
+  align-self: auto;
+}
+
+.Login-footer p {
+  margin-top: 20px;
+  margin-bottom: 1em;
+}
+
+.login-form {
+  padding: 10px;
+  max-width: 500px;
+}
+
+.login-form-button {
+  width: 100%;
+}
+
+.alignleft {
+  float: left;
+}
+
+.alignright {
+  float: right;
+}
+
+#components-layout-demo-responsive .logo {
+  height: 32px;
+  background: rgba(255, 255, 255, .2);
+  margin: 16px;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#components-layout-demo-side .logo {
+  height: 32px;
+  background: rgba(255, 255, 255, .2);
+  margin: 16px;
+}
+
+#showMe {
+  display: none;
+}
+
+#halfDay {
+  display: none;
+}
+
+#roles {
+  display: none;
+}
+
+.custom-filter-dropdown-id {
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .2);
+}
+
+.custom-filter-dropdown-id input {
+  width: 130px;
+  margin-right: 8px;
+}
+
+.custom-filter-dropdown-name {
+  padding: 8px;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, .2);
+}
+
+.custom-filter-dropdown-name input {
+  width: 130px;
+  margin-right: 8px;
+}
+
+/* body {
+  background-color: #0A7189;
+  color: white;
+  font-family: 'Lato', sans-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 2% 0 2% 0;
+  text-shadow: 0px 3px 0px #7f8c8d;
+} */
+
+.message {
+  position: absolute;
+  top: 1%;
+  left: 36%;
+}
+
+.error {
+  font-size: 20rem;
+  text-align: center;
+  margin: 0;
+}
+
+.rotate {
+  position: absolute;
+  top: 38%;
+  left: -4%;
+  background: none;
+  -webkit-transform-origin: 0 20px 0;
+  -moz-transform-origin: 0 20px 0;
+  -ms-transform-origin: 0 20px 0;
+  -o-transform-origin: 0 20px 0;
+  -webkit-transform: rotate(307deg);
+  -moz-transform: rotate(307deg);
+  -ms-transform: rotate(307deg);
+  -o-transform: rotate(307deg);
+}

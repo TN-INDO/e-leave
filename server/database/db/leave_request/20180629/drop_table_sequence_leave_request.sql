@@ -1,0 +1,1 @@
+DROP SEQUENCE leave_request_id_seq;

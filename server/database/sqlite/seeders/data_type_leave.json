@@ -1,0 +1,25 @@
+[{
+    "id": 11,
+    "type_name": "Annual Leave"
+  },
+  {
+    "id": 22,
+    "type_name": "Errand Leave"
+  },
+  {
+    "id": 33,
+    "type_name": "Sick Leave"
+  },
+  {
+    "id": 44,
+    "type_name": "Marriage Leave"
+  },
+  {
+    "id": 55,
+    "type_name": "Maternity Leave"
+  },
+  {
+    "id": 66,
+    "type_name": "Other Leave"
+  }
+]
