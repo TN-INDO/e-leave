@@ -184,7 +184,7 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 		c.Ctx.Output.SetStatus(400)
 		resp.Error = errors.New("your total leave is " + strTotal + " day and your " + resGet.TypeName + " balance is " + strBalance + " day left").Error()
 	} else {
-		errAddLeave := dbLeave.CreateLeaveRequest(
+		errAddLeave := dbLeave.CreateLeaveRequestSupervisor(
 			leave.EmployeeNumber,
 			leave.TypeLeaveID,
 			leave.Reason,
