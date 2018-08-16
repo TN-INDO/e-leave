@@ -47,15 +47,28 @@ type IBaseAdmin interface {
 		typeLeaveID int64,
 		total float64,
 	) error
+
+	// CancelRequestLeave
+	// CancelRequestLeave(
+	// 	id int64,
+	// 	employeeNumber int64,
+	// ) (err error)
+
 	// UpdateLeaveRemaning
 	UpdateLeaveRemaning(
 		total float64,
 		employeeNumber int64,
 		typeID int64,
 	) (err error)
-	// CancelRequestLeave
-	// CancelRequestLeave(
-	// 	id int64,
-	// 	employeeNumber int64,
-	// ) (err error)
+	// ResetUserTypeLeave
+	ResetUserTypeLeave(
+		leaveRemaining float64,
+		typeLeaveID int64,
+	) error
+	// UpdateUserTypeLeave
+	UpdateUserTypeLeave(
+		leaveRemaining float64,
+		typeLeaveID int64,
+		employeeNumber int64,
+	) error
 }

@@ -123,6 +123,11 @@ func init() {
 			&controllers.DirectorController{},
 			"put:CancelRequestLeave",
 		),
+		// reset leave balance by admin
+		beego.NSRouter("/admin/leave/reset_balance",
+			&controllers.AdminController{},
+			"put:ResetLeaveBalance",
+		),
 
 		// ========================= director ========================= //
 		// accept status by director

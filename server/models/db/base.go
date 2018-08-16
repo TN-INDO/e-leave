@@ -210,7 +210,7 @@ func MigrateData(param string) {
 
 	if param == "type_leave" {
 		var typeLeave []dbStruct.TypeLeave
-		fl := constant.GOPATH + "src/" + constant.GOAPP + "/database/sqlite/seeders/data_type_leave.json"
+		fl := constant.GOPATH + "/src/" + constant.GOAPP + "/database/sqlite/seeders/data_type_leave.json"
 
 		raw, err := ioutil.ReadFile(fl)
 		if err != nil {
@@ -226,7 +226,7 @@ func MigrateData(param string) {
 		beego.Debug(cnt, errMulti)
 	} else if param == "users" {
 		var users []dbStruct.User
-		fl := constant.GOPATH + "src/" + constant.GOAPP + "/database/sqlite/seeders/data_admin.json"
+		fl := constant.GOPATH + "/src/" + constant.GOAPP + "/database/sqlite/seeders/data_admin.json"
 
 		raw, err := ioutil.ReadFile(fl)
 		if err != nil {
