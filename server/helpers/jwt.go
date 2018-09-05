@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/astaxie/beego/config"
 	"github.com/dgrijalva/jwt-go"
@@ -9,8 +10,8 @@ import (
 
 // EzToken ...
 type EzToken struct {
-	Email   string
 	ID      int64
+	Email   string
 	Expires int64
 }
 
@@ -26,16 +27,21 @@ func init() {
 
 // GetToken ...
 func (e *EzToken) GetToken() (string, error) {
+	var strID = strconv.FormatInt(e.ID, 8)
+
 	claims := &jwt.StandardClaims{
 		ExpiresAt: e.Expires,
-		Issuer:    e.Email,
-		IssuedAt:  e.ID,
+		Id:        strID,
+		Audience:  e.Email,
 	}
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	tokenString, err := token.SignedString([]byte(verifyKey))
 	if err != nil {
+		CheckErr("Error signed string @GetToken", err)
 		panic(err)
 	}
+
 	return tokenString, err
 }
 
@@ -56,7 +62,6 @@ func (e *EzToken) ValidateToken(tokenString string) (bool, error) {
 	if token.Valid {
 		return true, nil
 	} else if ve, ok := err.(*jwt.ValidationError); ok {
-
 		if ve.Errors&jwt.ValidationErrorMalformed != 0 {
 			return false, errors.New("Invalid Token")
 		} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {

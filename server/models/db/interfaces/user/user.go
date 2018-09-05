@@ -8,13 +8,16 @@ import (
 
 // IBaseUser ...
 type IBaseUser interface {
-	// GetJWT
-	GetJWT(loginData *structAPI.ReqLogin) (
-		result structAPI.RespLogin,
+	// UserLogin
+	UserLogin(loginData *structAPI.ReqLogin) (
+		result structDB.User,
 		err error,
 	)
 	// ForgotPassword
 	ForgotPassword(e *structLogic.PasswordReset) error
+	CountUserEmail(email string) (int, error)
+	GetUser(email string) (structLogic.GetEmployee, error)
+
 	// UpdatePassword
 	UpdatePassword(
 		p *structLogic.NewPassword,

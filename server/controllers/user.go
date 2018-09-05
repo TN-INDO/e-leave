@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	logic "server/models/logic/user"
+	logicUser "server/models/logic/user"
 	structAPI "server/structs/api"
 	structLogic "server/structs/logic"
 
@@ -21,21 +22,21 @@ type UserController struct {
 // Login ...
 func (c *UserController) Login() {
 	var (
-		resp     structAPI.RespData
 		reqLogin structAPI.ReqLogin
+		resp     structAPI.RespData
 	)
 
 	body := c.Ctx.Input.RequestBody
 
 	err := json.Unmarshal(body, &reqLogin)
 	if err != nil {
-		helpers.CheckErr("unmarshall req body failed @Login", err)
+		helpers.CheckErr("Failed unmarshall req body @Login - controller", err)
 		resp.Error = errors.New("type request malform").Error()
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
 
-	result, errLogin := logic.DBPostUser.GetJWT(&reqLogin)
+	result, errLogin := logicUser.UserLogin(&reqLogin)
 	if errLogin != nil {
 		resp.Error = errLogin.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -45,7 +46,7 @@ func (c *UserController) Login() {
 
 	err = c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @Login", err)
+		helpers.CheckErr("Failed giving output @Login - controller", err)
 	}
 }
 
@@ -67,7 +68,7 @@ func (c *UserController) PasswordReset() {
 		return
 	}
 
-	errUpStat := logic.DBPostUser.ForgotPassword(&dbUser)
+	errUpStat := logicUser.ForgotPassword(&dbUser)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {

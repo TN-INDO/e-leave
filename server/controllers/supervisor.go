@@ -7,7 +7,7 @@ import (
 	"server/helpers"
 	"strconv"
 
-	logic "server/models/logic/user"
+	logicSupervisor "server/models/logic/supervisor"
 	structAPI "server/structs/api"
 	structLogic "server/structs/logic"
 
@@ -32,7 +32,7 @@ func (c *SupervisorController) GetPendingLeave() {
 		return
 	}
 
-	resGet, errGetPend := logic.DBPostSupervisor.GetUserPending(supervisorID)
+	resGet, errGetPend := logicSupervisor.GetEmployeePending(supervisorID)
 	if errGetPend != nil {
 		resp.Error = errGetPend.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -60,7 +60,7 @@ func (c *SupervisorController) GetAcceptLeave() {
 		return
 	}
 
-	resGet, errGetAccept := logic.DBPostSupervisor.GetUserAccept(supervisorID)
+	resGet, errGetAccept := logicSupervisor.GetEmployeeApproved(supervisorID)
 	if errGetAccept != nil {
 		resp.Error = errGetAccept.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -88,7 +88,7 @@ func (c *SupervisorController) GetRejectLeave() {
 		return
 	}
 
-	resGet, errGetReject := logic.DBPostSupervisor.GetUserReject(supervisorID)
+	resGet, errGetReject := logicSupervisor.GetEmployeeRejected(supervisorID)
 	if errGetReject != nil {
 		resp.Error = errGetReject.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -122,7 +122,7 @@ func (c *SupervisorController) AcceptStatusBySupervisor() {
 		return
 	}
 
-	errUpStat := logic.DBPostSupervisor.AcceptBySupervisor(id, employeeNumber)
+	errUpStat := logicSupervisor.ApproveBySupervisor(id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {
@@ -170,7 +170,7 @@ func (c *SupervisorController) RejectStatusBySv() {
 		return
 	}
 
-	errUpStat := logic.DBPostSupervisor.RejectBySv(&leave, id, employeeNumber)
+	errUpStat := logicSupervisor.RejectBySupervisor(&leave, id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {

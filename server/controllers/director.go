@@ -7,9 +7,10 @@ import (
 	"server/helpers"
 	"strconv"
 
-	db "server/models/db/pgsql/director"
 	structAPI "server/structs/api"
 	structDB "server/structs/db"
+
+	logicDirector "server/models/logic/director"
 
 	"github.com/astaxie/beego"
 )
@@ -19,12 +20,63 @@ type DirectorController struct {
 	beego.Controller
 }
 
+// GetDirectorPendingLeave ...
+func (c *DirectorController) GetDirectorPendingLeave() {
+	var resp structAPI.RespData
+
+	resGet, errGetPend := logicDirector.GetEmployeePendingRequest()
+	if errGetPend != nil {
+		resp.Error = errGetPend.Error()
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resp.Body = resGet
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+	}
+}
+
+// GetDirectorAcceptLeave ...
+func (c *DirectorController) GetDirectorAcceptLeave() {
+	var resp structAPI.RespData
+
+	resGet, errGetAcc := logicDirector.GetEmployeeApprovedRequest()
+	if errGetAcc != nil {
+		resp.Error = errGetAcc.Error()
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resp.Body = resGet
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+	}
+}
+
+// GetDirectorRejectLeave ...
+func (c *DirectorController) GetDirectorRejectLeave() {
+	var resp structAPI.RespData
+
+	resGet, errGetReject := logicDirector.GetEmployeeRejectedRequest()
+	if errGetReject != nil {
+		resp.Error = errGetReject.Error()
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resp.Body = resGet
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+	}
+}
+
 // AcceptStatusByDirector ...
 func (c *DirectorController) AcceptStatusByDirector() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
+	var resp structAPI.RespData
 
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
@@ -42,7 +94,7 @@ func (c *DirectorController) AcceptStatusByDirector() {
 		return
 	}
 
-	errUpStat := dbDirector.AcceptByDirector(id, employeeNumber)
+	errUpStat := logicDirector.ApproveByDirector(id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {
@@ -58,9 +110,8 @@ func (c *DirectorController) AcceptStatusByDirector() {
 // RejectStatusByDirector ...
 func (c *DirectorController) RejectStatusByDirector() {
 	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-		leave      structDB.LeaveRequest
+		resp  structAPI.RespData
+		leave structDB.LeaveRequest
 	)
 
 	body := c.Ctx.Input.RequestBody
@@ -91,7 +142,7 @@ func (c *DirectorController) RejectStatusByDirector() {
 		return
 	}
 
-	errUpStat := dbDirector.RejectByDirector(&leave, id, employeeNumber)
+	errUpStat := logicDirector.RejectByDirector(&leave, id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {
@@ -104,74 +155,10 @@ func (c *DirectorController) RejectStatusByDirector() {
 	}
 }
 
-// GetDirectorPendingLeave ...
-func (c *DirectorController) GetDirectorPendingLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
-
-	resGet, errGetPend := dbDirector.GetDirectorPendingRequest()
-	if errGetPend != nil {
-		resp.Error = errGetPend.Error()
-		c.Ctx.Output.SetStatus(400)
-	} else {
-		resp.Body = resGet
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
-	}
-}
-
-// GetDirectorAcceptLeave ...
-func (c *DirectorController) GetDirectorAcceptLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
-
-	resGet, errGetAcc := dbDirector.GetDirectorAcceptRequest()
-	if errGetAcc != nil {
-		resp.Error = errGetAcc.Error()
-		c.Ctx.Output.SetStatus(400)
-	} else {
-		resp.Body = resGet
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
-	}
-}
-
-// GetDirectorRejectLeave ...
-func (c *DirectorController) GetDirectorRejectLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
-
-	resGet, errGetReject := dbDirector.GetDirectorRejectRequest()
-	if errGetReject != nil {
-		resp.Error = errGetReject.Error()
-		c.Ctx.Output.SetStatus(400)
-	} else {
-		resp.Body = resGet
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
-	}
-}
-
 // CancelRequestLeave ...
 func (c *DirectorController) CancelRequestLeave() {
 	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
+		resp structAPI.RespData
 	)
 
 	idStr := c.Ctx.Input.Param(":id")
@@ -190,7 +177,7 @@ func (c *DirectorController) CancelRequestLeave() {
 		return
 	}
 
-	errUpStat := dbDirector.CancelRequestLeave(id, employeeNumber)
+	errUpStat := logicDirector.CancelRequestLeave(id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {

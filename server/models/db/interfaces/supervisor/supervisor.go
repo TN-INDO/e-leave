@@ -7,29 +7,31 @@ import (
 // IBaseSupervisor ...
 type IBaseSupervisor interface {
 	// GetUserPending
-	GetUserPending(supervisorID int64) (
+	GetEmployeePending(supervisorID int64) (
 		[]structLogic.LeavePending,
 		error,
 	)
-	// GetUserAccept
-	GetUserAccept(supervisorID int64) (
+	// GetEmployeeApproved
+	GetEmployeeApproved(supervisorID int64) (
 		[]structLogic.LeaveAccept,
 		error,
 	)
-	// GetUserReject
-	GetUserReject(supervisorID int64) (
+	// GetEmployeeRejected
+	GetEmployeeRejected(supervisorID int64) (
 		[]structLogic.LeaveReject,
 		error,
 	)
-	// AcceptBySupervisor
-	AcceptBySupervisor(
+	// ApproveBySupervisor
+	ApproveBySupervisor(
 		id int64,
 		employeeNumber int64,
+		actionBy string,
 	) error
 	// RejectBySupervisor
-	RejectBySv(
+	RejectBySupervisor(
 		l *structLogic.LeaveReason,
 		id int64,
 		employeeNumber int64,
+		actionBy string,
 	) error
 }

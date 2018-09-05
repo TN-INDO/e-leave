@@ -1,7 +1,6 @@
 package user
 
 import (
-	"encoding/base64"
 	"errors"
 	"server/helpers"
 	"server/helpers/constant"
@@ -11,81 +10,73 @@ import (
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
 
-	"time"
-
 	"github.com/astaxie/beego/orm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // User ...
 type User struct{}
 
-// GetJWT ...
-func (u *User) GetJWT(loginData *structAPI.ReqLogin) (result structAPI.RespLogin, err error) {
-	var (
-		user      structDB.User
-		RespLogin structAPI.RespLogin
-	)
+// UserLogin ...
+func (u *User) UserLogin(loginData *structAPI.ReqLogin) (user structDB.User, err error) {
 
 	o := orm.NewOrm()
 	errRaw := o.Raw(`SELECT * FROM `+user.TableName()+` WHERE email = ?`, loginData.Email).QueryRow(&user)
 	if errRaw != nil {
-		helpers.CheckErr("error get users @GetJWT", errRaw)
-		return RespLogin, errors.New("Email not register")
+		helpers.CheckErr("Error get user @UserLogin", errRaw)
+		return user, errors.New("Email not register")
 	}
 
-	hashBytes, _ := base64.StdEncoding.DecodeString(user.Password)
-
-	errCompare := bcrypt.CompareHashAndPassword(hashBytes, []byte(loginData.Password))
-	if errCompare != nil {
-		helpers.CheckErr("error compare password @GetJWT", errCompare)
-		return RespLogin, errors.New("Wrong password")
-	}
-
-	ezT := helpers.EzToken{
-		Email:   user.Email,
-		ID:      user.EmployeeNumber,
-		Expires: time.Now().Unix() + 3600,
-	}
-	token, err := ezT.GetToken()
-	if err != nil {
-		helpers.CheckErr("error get token @GetJWT", err)
-		return RespLogin, errors.New("Failed Generating token")
-	}
-
-	RespLogin.Token = token
-	RespLogin.ID = user.EmployeeNumber
-	RespLogin.Role = user.Role
-
-	return RespLogin, err
+	return user, err
 }
 
 // ForgotPassword ...
 func (u *User) ForgotPassword(e *structLogic.PasswordReset) error {
-	var (
-		dbUser      structDB.User
-		getEmployee structLogic.GetEmployee
-		count       int
-	)
-
+	var dbUser structDB.User
 	passwordReset := "JDJhJDEwJGtLeW42RFBOOEt2WUdpMlZHdHJ6bnVqY0gyU0lYUFNBMFVDQ0VQMW1kSWRIcHRmdWRsTmJl"
 
 	o := orm.NewOrm()
 
-	o.Raw(`SELECT count(*) as Count FROM `+dbUser.TableName()+` WHERE email = ?`, e.Email).QueryRow(&count)
-	o.Raw(`SELECT name, email FROM `+dbUser.TableName()+` WHERE email = ?`, e.Email).QueryRow(&getEmployee)
-
-	if count == 0 {
-		return errors.New("email not register")
-	} else {
-		_, errRAW := o.Raw(`UPDATE `+dbUser.TableName()+` SET password = ? WHERE email = ?`, passwordReset, e.Email).Exec()
-		if errRAW != nil {
-			helpers.CheckErr("error forgot password @ForgotPassword", errRAW)
-		}
-
-		helpers.GoMailForgotPassword(getEmployee.Email, getEmployee.Name)
-		return errRAW
+	_, errRAW := o.Raw(`UPDATE `+dbUser.TableName()+` SET password = ? WHERE email = ?`, passwordReset, e.Email).Exec()
+	if errRAW != nil {
+		helpers.CheckErr("Error forgot password @ForgotPassword", errRAW)
+		return errors.New("Error forgot password @ForgotPassword")
 	}
+
+	return errRAW
+}
+
+// CountUserEmail ...
+func (u *User) CountUserEmail(email string) (int, error) {
+	var (
+		dbUser structDB.User
+		count  int
+	)
+
+	o := orm.NewOrm()
+	errGet := o.Raw(`SELECT count(*) as Count FROM `+dbUser.TableName()+` WHERE email = ?`, email).QueryRow(&count)
+	if errGet != nil {
+		helpers.CheckErr("Failed query select @GetTypeLeave", errGet)
+		return count, errors.New("Error count user by email")
+	}
+
+	return count, errGet
+}
+
+// GetUser ...
+func (u *User) GetUser(email string) (structLogic.GetEmployee, error) {
+	var (
+		dbUser   structDB.User
+		employee structLogic.GetEmployee
+	)
+
+	o := orm.NewOrm()
+	errGet := o.Raw(`SELECT name, email FROM `+dbUser.TableName()+` WHERE email = ?`, email).QueryRow(&employee)
+	if errGet != nil {
+		helpers.CheckErr("Failed query select @GetUser", errGet)
+		return employee, errors.New("Error get user")
+	}
+
+	return employee, errGet
 }
 
 // UpdatePassword ...
@@ -105,7 +96,9 @@ func (u *User) UpdatePassword(p *structLogic.NewPassword, employeeNumber int64) 
 	bsNewPassword := []byte(p.NewPassword)
 	bsConfirmPassword := []byte(p.ConfirmPassword)
 
-	resGet, _ := admin.GetUser(employeeNumber)
+	resGet, errGet := admin.GetUser(employeeNumber)
+	helpers.CheckErr("Error get user @UpdatePassword", errGet)
+
 	resComparePassword := helpers.ComparePassword(resGet.Password, p.OldPassword)
 
 	if resComparePassword == true {
@@ -166,9 +159,10 @@ func (u *User) GetDirector() (result structLogic.GetDirector, err error) {
 
 	errRaw := o.Raw(sql, role).QueryRow(&result)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirector", errRaw)
-		return result, errors.New("employee number not exist")
+		helpers.CheckErr("Failed query select @GetDirector", errRaw)
+		return result, errors.New("No role with director")
 	}
+
 	return result, err
 }
 
@@ -199,9 +193,10 @@ func (u *User) GetSupervisor(employeeNumber int64) (result structLogic.GetSuperv
 
 	errRaw := o.Raw(sql, employeeNumber).QueryRow(&result)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetSupervisor", errRaw)
-		return result, errors.New("employee number not exist")
+		helpers.CheckErr("Failed query select @GetSupervisor", errRaw)
+		return result, errors.New("Employee number not exist")
 	}
+
 	return result, err
 }
 
@@ -226,21 +221,20 @@ func (u *User) GetEmployee(employeeNumber int64) (result structLogic.GetEmployee
 
 	errRaw := o.Raw(sql, employeeNumber).QueryRow(&result)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetEmployee", errRaw)
-		return result, errors.New("employee number not exist")
+		helpers.CheckErr("Failed query select @GetEmployee", errRaw)
+		return result, errors.New("Employee number not exist")
 	}
+
 	return result, err
 }
 
 // GetSumarry ...
 func (u *User) GetSumarry(employeeNumber int64) ([]structLogic.UserSumarry, error) {
 	var (
-		sumarry     []structLogic.UserSumarry
 		dbLeave     structDB.LeaveRequest
 		dbTypeLeave structDB.TypeLeave
+		sumarry     []structLogic.UserSumarry
 	)
-
-	statSuccessInDirector := constant.StatusSuccessInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
@@ -260,10 +254,12 @@ func (u *User) GetSumarry(employeeNumber int64) ([]structLogic.UserSumarry, erro
 		GroupBy(dbTypeLeave.TableName() + `.type_name`)
 	sql := qb.String()
 
+	statSuccessInDirector := constant.StatusSuccessInDirector
+
 	_, errRaw := o.Raw(sql, employeeNumber, statSuccessInDirector).QueryRows(&sumarry)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetSumarry", errRaw)
-		return sumarry, errors.New("error get user summary")
+		helpers.CheckErr("Failed query select @GetSumarry", errRaw)
+		return sumarry, errors.New("Error get user summary")
 	}
 
 	return sumarry, errRaw
@@ -295,8 +291,9 @@ func (u *User) GetUserTypeLeave(employeeNumber int64) (result []structLogic.User
 	_, errRaw := o.Raw(sql, employeeNumber).QueryRows(&result)
 	if errRaw != nil {
 		helpers.CheckErr("Failed Query Select @GetUserTypeLeave", errRaw)
-		return result, errors.New("error get")
+		return result, errors.New("Error get user type leave")
 	}
+
 	return result, err
 }
 
@@ -325,9 +322,10 @@ func (u *User) GetUserLeaveRemaining(typeID int64, employeeNumber int64) (result
 
 	errRaw := o.Raw(sql, typeID, employeeNumber).QueryRow(&result)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetUserLeaveRemaining", errRaw)
-		return result, errors.New("error get")
+		helpers.CheckErr("Failed query select @GetUserLeaveRemaining", errRaw)
+		return result, errors.New("Error get user leave balance")
 	}
+
 	return result, err
 }
 
@@ -353,8 +351,9 @@ func (u *User) GetSupervisors() (result []structLogic.GetSupervisors, err error)
 	_, errRaw := o.Raw(sql, role).QueryRows(&result)
 	if errRaw != nil {
 		helpers.CheckErr("Failed Query Select @GetSupervisors", errRaw)
-		return result, errors.New("error get")
+		return result, errors.New("Error get supervisor")
 	}
+
 	return result, err
 }
 
@@ -377,8 +376,9 @@ func (u *User) GetTypeLeave() (result []structDB.TypeLeave, err error) {
 
 	_, errRaw := o.Raw(sql).QueryRows(&result)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetTypeLeave", errRaw)
-		return result, errors.New("error get")
+		helpers.CheckErr("Failed query select @GetTypeLeave", errRaw)
+		return result, errors.New("Error get type leave")
 	}
+
 	return result, err
 }
