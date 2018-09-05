@@ -106,12 +106,12 @@ class LoginPage extends Component {
             className="container"
             style={{
               display: "flex",
-              margin: "153px 20px ",
+              margin: "172px 15px ",
               justifyContent: "center"
             }}
           >
             <div
-              style={{ padding: 70, background: "#fff", "border-radius": 7 }}
+              style={{ padding: 50, background: "#fff", "border-radius": 7 }}
             >
               <Form onSubmit={this.handleSumbitLogin} className="login-form">
                 <h1 align="left">Login to your account</h1>

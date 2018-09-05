@@ -22,13 +22,13 @@ class AdminLandingPage extends Component {
         title: "Name",
         dataIndex: "name",
         key: "name",
-        width: "18%"
+        width: "20%"
       },
       {
         title: "Email",
         dataIndex: "email",
         key: "email",
-        width: "18%"
+        width: "15%"
       },
       {
         title: "Position",
@@ -45,7 +45,7 @@ class AdminLandingPage extends Component {
       {
         title: "Action",
         key: "action",
-        width: "25%",
+        width: "15%",
         render: (text, record) => (
           //  (record.employee_number))
           <span>
@@ -71,7 +71,7 @@ class AdminLandingPage extends Component {
             >
               <Button type="danger">Delete</Button>
             </Popconfirm>
-            <Divider type="vertical" />
+            {/* <Divider type="vertical" /> */}
             {/* {record.role === "supervisor" || record.role === "employee" ? (
               <Button
                 onClick={() => {
@@ -134,9 +134,9 @@ class AdminLandingPage extends Component {
             className="container"
             style={{
               display: "flex",
-              margin: "20px 16px 0",
+              margin: "20px 15px 0",
               justifyContent: "center",
-              paddingBottom: "627px"
+              paddingBottom: "356px"
             }}
           >
             <div style={{ padding: 20, background: "#fff" }}>
