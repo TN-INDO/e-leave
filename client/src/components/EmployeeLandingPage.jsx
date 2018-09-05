@@ -57,7 +57,7 @@ export class EmployeeLandingPage extends React.Component {
         );
       } else if (dataType[j].type_name === "Sick Leave") {
         typeLeave.push(
-          <p>{`${dataType[j].type_name} (up to 10 days) : ${
+          <p>{`${dataType[j].type_name} : ${
             dataType[j].leave_remaining
           } days of 30 days`}</p>
         );

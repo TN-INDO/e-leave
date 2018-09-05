@@ -1,4 +1,5 @@
-export const ROOT_API = 'http://ec2-18-222-196-130.us-east-2.compute.amazonaws.com:8080';
+export const ROOT_API = 'http://ec2-18-222-196-130.us-east-2.compute.amazonaws.com:8080'; // aws
+// export const ROOT_API = 'http://localhost:8080'; // local
 
 export const CLEAR_FIELD = "CLEAR_FIELD"
 
