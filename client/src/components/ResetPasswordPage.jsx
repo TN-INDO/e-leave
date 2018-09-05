@@ -104,7 +104,7 @@ class ResetPasswordPage extends Component {
             style={{
               display: "flex",
               margin: "192px 15px ",
-              justifyContent: "space-around"
+              justifyContent: "center"
             }}
           >
             <div

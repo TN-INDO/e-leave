@@ -538,7 +538,7 @@ class LeaveRequestPage extends Component {
                     type="text"
                     id="contact_address"
                     name="contact_address"
-                    placeholder="contact_address, email, etc"
+                    placeholder="address, email, etc"
                     onChange={this.handleOnChange}
                     autosize={{ minRows: 2, maxRows: 8 }}
                     style={formStyle}
