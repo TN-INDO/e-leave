@@ -171,7 +171,7 @@ class AdminApprovePage extends Component {
     this.cancelRequestLeave(this.props.leave, id, employeeNumber);
     setTimeout(() => {
       this.setState({ loading: false, visible: false });
-    }, 3000);
+    }, 760);
   };
 
   cancelRequestLeave = (leave, id, enumber) => {

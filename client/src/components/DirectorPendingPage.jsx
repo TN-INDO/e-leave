@@ -157,7 +157,7 @@ class DirectorPendingPage extends Component {
     this.directorApproveRequest(this.props.leaves, id, employeeNumber);
     setTimeout(() => {
       this.setState({ loadingA: false, visible: false });
-    }, 3000);
+    }, 760);
   };
 
   handleReject = () => {
@@ -173,7 +173,7 @@ class DirectorPendingPage extends Component {
     );
     setTimeout(() => {
       this.setState({ loadingR: false, visible: false, visibleReject: false });
-    }, 3000);
+    }, 760);
   };
 
   showReject = () => {
