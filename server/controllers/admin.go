@@ -59,17 +59,26 @@ func (c *AdminController) CreateUser() {
 		resp.Body = "create user success"
 	}
 
-	// startDate := helpers.GetDay(user.StartWorkingDate)
-	// annualLeave := 12 + (12 - startDate)
-	// beego.Debug("==>", annualLeave)
-
-	if reqUser.Gender == "Male" && reqUser.Role == "employee" || reqUser.Role == "supervisor" {
+	if reqUser.Gender == "Male" && reqUser.Role == "employee" {
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Female" && reqUser.Role == "employee" || reqUser.Role == "supervisor" {
+	} else if reqUser.Gender == "Male" && reqUser.Role == "supervisor" {
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+	} else if reqUser.Gender == "Female" && reqUser.Role == "employee" {
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
+		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+	} else if reqUser.Gender == "Female" && reqUser.Role == "supervisor" {
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
 		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
@@ -260,5 +269,29 @@ func (c *AdminController) GetRequestReject() {
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
 		helpers.CheckErr("failed giving output @GetRequestReject", err)
+	}
+}
+
+// ResetLeaveBalance ...
+func (c *AdminController) ResetLeaveBalance() {
+	var resp structAPI.RespData
+
+	errReset := logic.DBPostAdmin.ResetUserTypeLeave(11, 12)
+	errReset = logic.DBPostAdmin.ResetUserTypeLeave(22, 3)
+	errReset = logic.DBPostAdmin.ResetUserTypeLeave(33, 30)
+	errReset = logic.DBPostAdmin.ResetUserTypeLeave(44, 2)
+	errReset = logic.DBPostAdmin.ResetUserTypeLeave(55, 90)
+	errReset = logic.DBPostAdmin.ResetUserTypeLeave(66, 2)
+
+	if errReset != nil {
+		resp.Error = errReset.Error()
+		c.Ctx.Output.SetStatus(400)
+	} else {
+		resp.Body = "reset leave balance success"
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("failed giving output @ResetLeaveBalance", err)
 	}
 }

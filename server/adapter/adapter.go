@@ -9,5 +9,5 @@ func CallPGSQL() string {
 
 // CallSQLITE ...
 func CallSQLITE() string {
-	return constant.GOPATH + "src/" + constant.GOAPP + "/database/sqlite/db_leave_request.db"
+	return constant.GOPATH + "/src/" + constant.GOAPP + "/database/sqlite/db_leave_request.db"
 }
