@@ -57,7 +57,7 @@ func init() {
 		// create leave request for employee, update leave request, delete leave request
 		beego.NSRouter("/employee/leave/:id:int ",
 			&controllers.LeaveController{},
-			"post:PostLeaveRequest;put:UpdateRequest;delete:DeleteRequest",
+			"post:PostLeaveRequestEmployee;put:UpdateRequest;delete:DeleteRequest",
 		),
 		// create leave request for supervisor
 		beego.NSRouter("/supervisor/leave/:id:int ",

@@ -33,7 +33,7 @@ func (c *DirectorController) GetDirectorPendingLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
@@ -51,7 +51,7 @@ func (c *DirectorController) GetDirectorAcceptLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
@@ -69,7 +69,7 @@ func (c *DirectorController) GetDirectorRejectLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
@@ -80,16 +80,16 @@ func (c *DirectorController) AcceptStatusByDirector() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @AcceptStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @AcceptStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	employeeStr := c.Ctx.Input.Param(":enumber")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @AcceptStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert employee number failed @AcceptStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert employee number failed").Error()
 		return
 	}
 
@@ -102,7 +102,7 @@ func (c *DirectorController) AcceptStatusByDirector() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @AcceptStatusByDirector", err)
+		helpers.CheckErr("Failed giving output @AcceptStatusByDirector - controller", err)
 	}
 }
 
@@ -118,8 +118,8 @@ func (c *DirectorController) RejectStatusByDirector() {
 
 	errMarshal := json.Unmarshal(body, &leave)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @RejectStatusByDirector", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @RejectStatusByDirector - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -128,16 +128,16 @@ func (c *DirectorController) RejectStatusByDirector() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @RejectStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @RejectStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	employeeStr := c.Ctx.Input.Param(":enumber")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @RejectStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert employee number failed @RejectStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert employee number failed").Error()
 		return
 	}
 
@@ -150,6 +150,6 @@ func (c *DirectorController) RejectStatusByDirector() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @RejectStatusByDirector", err)
+		helpers.CheckErr("Failed giving output @RejectStatusByDirector - controller", err)
 	}
 }

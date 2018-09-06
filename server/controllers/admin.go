@@ -32,8 +32,8 @@ func (c *AdminController) CreateUser() {
 
 	errMarshal := json.Unmarshal(body, &reqUser)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @CreateUser", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body failed @CreateUser - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -57,7 +57,7 @@ func (c *AdminController) CreateUser() {
 		resp.Error = errAddUser.Error()
 		c.Ctx.Output.SetStatus(400)
 	} else {
-		resp.Body = "create user success"
+		resp.Body = "Create user success"
 	}
 
 	if reqUser.Gender == "Male" && reqUser.Role == "employee" {
@@ -90,7 +90,7 @@ func (c *AdminController) CreateUser() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @CreateUser", err)
+		helpers.CheckErr("Failed giving output @CreateUser - controller", err)
 	}
 }
 
@@ -108,7 +108,7 @@ func (c *AdminController) GetUsers() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUsers", err)
+		helpers.CheckErr("Failed giving output @GetUsers - controller", err)
 	}
 }
 
@@ -119,8 +119,8 @@ func (c *AdminController) GetUser() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRequestAccept", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRequestAccept - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -134,7 +134,7 @@ func (c *AdminController) GetUser() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUsers", err)
+		helpers.CheckErr("Failed giving output @GetUsers - controller", err)
 	}
 }
 
@@ -145,8 +145,8 @@ func (c *AdminController) DeleteUser() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @DeleteUser", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @DeleteUser - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -159,7 +159,7 @@ func (c *AdminController) DeleteUser() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @DeleteUser", err)
+		helpers.CheckErr("Failed giving output @DeleteUser - controller", err)
 	}
 }
 
@@ -175,8 +175,8 @@ func (c *AdminController) UpdateUser() {
 
 	err := json.Unmarshal(body, &reqUser)
 	if err != nil {
-		helpers.CheckErr("unmarshall req body failed @UpdateUser", err)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @UpdateUser - controller", err)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
@@ -184,13 +184,13 @@ func (c *AdminController) UpdateUser() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @UpdateUser", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @UpdateUser - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	resTime, errTime := helpers.NowLoc("Asia/Jakarta")
-	helpers.CheckErr("err time", errTime)
+	helpers.CheckErr("Error get location time time @UpdateUser - controller", errTime)
 
 	user := structDB.User{
 		EmployeeNumber:   reqUser.EmployeeNumber,
@@ -215,7 +215,7 @@ func (c *AdminController) UpdateUser() {
 
 	err = c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @UpdateUser", err)
+		helpers.CheckErr("Failed giving output @UpdateUser - controller", err)
 	}
 }
 

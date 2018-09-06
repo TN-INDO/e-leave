@@ -4,7 +4,6 @@ import (
 	"errors"
 	"server/helpers"
 	"server/helpers/constant"
-	logicUser "server/models/db/pgsql/user"
 	structAPI "server/structs/api"
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
@@ -17,8 +16,8 @@ import (
 // LeaveRequest ...
 type LeaveRequest struct{}
 
-// CreateLeaveRequest ...
-func (l *LeaveRequest) CreateLeaveRequest(
+// CreateLeaveRequestEmployee ...
+func (l *LeaveRequest) CreateLeaveRequestEmployee(
 	employeeNumber int64,
 	typeLeaveID int64,
 	reason string,
@@ -29,22 +28,21 @@ func (l *LeaveRequest) CreateLeaveRequest(
 	total float64,
 	address string,
 	contactLeave string,
-	status string) error {
-
-	var leave structDB.LeaveRequest
-	var user logicUser.User
+	status string,
+) error {
+	var dbLeave structDB.LeaveRequest
 
 	isHalfDay := helpers.ArrayToString(halfDates, ",")
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetUserPending", errQB)
+		helpers.CheckErr("Query builder failed @CreateLeaveRequestEmployee", errQB)
 		return errQB
 	}
 
 	qb.InsertInto(
-		leave.TableName(),
+		dbLeave.TableName(),
 		"employee_number",
 		"type_leave_id",
 		"reason",
@@ -72,24 +70,12 @@ func (l *LeaveRequest) CreateLeaveRequest(
 		contactLeave,
 		status,
 	}
+
 	_, err := o.Raw(sql, values).Exec()
 	if err != nil {
 		helpers.CheckErr("Error insert leave request @CreateLeaveRequestEmployee", err)
 		return errors.New("Insert leave request failed")
 	}
-
-	go func() {
-		getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-		helpers.CheckErr("Error get employee @CreateLeaveRequestEmployee", errGetEmployee)
-
-		getSupervisorID, errGetSupervisorID := user.GetSupervisor(employeeNumber)
-		helpers.CheckErr("Error get supervisor id @CreateLeaveRequestEmployee", errGetSupervisorID)
-
-		getSupervisor, errGetSupervisor := user.GetEmployee(getSupervisorID.SupervisorID)
-		helpers.CheckErr("Error get supervisor @CreateLeaveRequestEmployee", errGetSupervisor)
-
-		helpers.GoMailSupervisor(getSupervisor.Email, getEmployee.Name, getSupervisor.Name)
-	}()
 
 	return err
 }
@@ -106,10 +92,9 @@ func (l *LeaveRequest) CreateLeaveRequestSupervisor(
 	total float64,
 	address string,
 	contactLeave string,
-	status string) error {
-
-	var leave structDB.LeaveRequest
-	var user logicUser.User
+	status string,
+) error {
+	var dbLeave structDB.LeaveRequest
 
 	isHalfDay := helpers.ArrayToString(halfDates, ",")
 
@@ -121,7 +106,7 @@ func (l *LeaveRequest) CreateLeaveRequestSupervisor(
 	}
 
 	qb.InsertInto(
-		leave.TableName(),
+		dbLeave.TableName(),
 		"employee_number",
 		"type_leave_id",
 		"reason",
@@ -149,21 +134,12 @@ func (l *LeaveRequest) CreateLeaveRequestSupervisor(
 		contactLeave,
 		status,
 	}
+
 	_, err := o.Raw(sql, values).Exec()
 	if err != nil {
 		helpers.CheckErr("Error insert leave request @CreateLeaveRequestSupervisor", err)
 		return errors.New("Insert leave request failed")
 	}
-
-	go func() {
-		getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-		helpers.CheckErr("Error get employee @CreateLeaveRequestSupervisor", errGetEmployee)
-
-		getDirector, errGetDirector := user.GetDirector()
-		helpers.CheckErr("Error get employee @CreateLeaveRequestSupervisor", errGetDirector)
-
-		helpers.GoMailDirectorFromSupervisor(getDirector.Email, getEmployee.Name, getDirector.Name)
-	}()
 
 	return err
 }

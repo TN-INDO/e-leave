@@ -2,10 +2,90 @@ package leave
 
 import (
 	"server/helpers"
+	"server/models/logic/user"
 
 	structAPI "server/structs/api"
 	structLogic "server/structs/logic"
 )
+
+// CreateLeaveRequestEmployee ...
+func CreateLeaveRequestEmployee(
+	employeeNumber int64,
+	typeLeaveID int64,
+	reason string,
+	dateFrom string,
+	dateTo string,
+	halfDates []string,
+	backOn string,
+	total float64,
+	address string,
+	contactLeave string,
+	status string,
+) error {
+
+	getEmployee, errGetEmployee := DBUser.GetEmployee(employeeNumber)
+	helpers.CheckErr("Error get employee @CreateLeaveRequestEmployee", errGetEmployee)
+
+	getSupervisorID, errGetSupervisorID := DBUser.GetSupervisor(employeeNumber)
+	helpers.CheckErr("Error get supervisor id @CreateLeaveRequestEmployee", errGetSupervisorID)
+
+	getSupervisor, errGetSupervisor := DBUser.GetEmployee(getSupervisorID.SupervisorID)
+	helpers.CheckErr("Error get supervisor @CreateLeaveRequestEmployee", errGetSupervisor)
+
+	errInsert := DBLeave.CreateLeaveRequestEmployee(employeeNumber, typeLeaveID, reason, dateFrom, dateTo, halfDates, backOn, total, address, contactLeave, status)
+	if errInsert != nil {
+		helpers.CheckErr("Error delete leave request @CreateLeaveRequestEmployee - logicLeave", errInsert)
+	}
+
+	go func() {
+		helpers.GoMailSupervisor(getSupervisor.Email, getEmployee.Name, getSupervisor.Name)
+	}()
+
+	return errInsert
+}
+
+// CreateLeaveRequestSupervisor ...
+func CreateLeaveRequestSupervisor(
+	employeeNumber int64,
+	typeLeaveID int64,
+	reason string,
+	dateFrom string,
+	dateTo string,
+	halfDates []string,
+	backOn string,
+	total float64,
+	address string,
+	contactLeave string,
+	status string,
+) error {
+
+	getEmployee, errGetEmployee := DBUser.GetEmployee(employeeNumber)
+	helpers.CheckErr("Error get employee @CreateLeaveRequestSupervisor", errGetEmployee)
+
+	getDirector, errGetDirector := user.GetDirector()
+	helpers.CheckErr("Error get employee @CreateLeaveRequestSupervisor", errGetDirector)
+
+	errInsert := DBLeave.CreateLeaveRequestSupervisor(employeeNumber, typeLeaveID, reason, dateFrom, dateTo, halfDates, backOn, total, address, contactLeave, status)
+	if errInsert != nil {
+		helpers.CheckErr("Error delete leave request @CreateLeaveRequestSupervisor - logicLeave", errInsert)
+	}
+
+	go func() {
+		helpers.GoMailDirectorFromSupervisor(getDirector.Email, getEmployee.Name, getDirector.Name)
+	}()
+
+	return errInsert
+}
+
+// // UpdateRequest ...
+// func UpdateRequest(e *structAPI.UpdateLeaveRequest) error {
+// 	errUpdate := DBLeave.UpdateRequest(e)
+// 	if errUpdate != nil {
+// 		helpers.CheckErr("Error update leave request @UpdateRequest - logicLeave", errUpdate)
+// 	}
+
+// 	return errUpdate
+// }
 
 // GetLeave ...
 func GetLeave(id int64) (structLogic.GetLeave, error) {

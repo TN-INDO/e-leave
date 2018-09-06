@@ -10,8 +10,8 @@ import (
 	"time"
 
 	db "server/models/db/pgsql/leave_request"
-	userLogic "server/models/db/pgsql/user"
 	logicLeave "server/models/logic/leave"
+	logicUser "server/models/logic/user"
 	structAPI "server/structs/api"
 
 	"github.com/astaxie/beego"
@@ -22,20 +22,18 @@ type LeaveController struct {
 	beego.Controller
 }
 
-// PostLeaveRequest ...
-func (c *LeaveController) PostLeaveRequest() {
+// PostLeaveRequestEmployee ...
+func (c *LeaveController) PostLeaveRequestEmployee() {
 	var (
-		resp    structAPI.RespData
-		req     structAPI.ReqLeave
-		dbLeave db.LeaveRequest
-		dbUser  userLogic.User
+		req  structAPI.ReqLeave
+		resp structAPI.RespData
 	)
 
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @PostLeaveRequest", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @PostLeaveRequestEmployee - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -44,8 +42,8 @@ func (c *LeaveController) PostLeaveRequest() {
 
 	errMarshal := json.Unmarshal(body, &req)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @PostLeaveRequest", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @PostLeaveRequestEmployee - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -56,8 +54,8 @@ func (c *LeaveController) PostLeaveRequest() {
 	valueHalfDay := float64(0.5)
 	result := helpers.Multiply(totalDay, reqHalfDay, valueHalfDay)
 
-	resGet, errGet := dbUser.GetUserLeaveRemaining(req.TypeLeaveID, employeeNumber)
-	helpers.CheckErr("err get", errGet)
+	resGet, errGet := logicUser.GetUserLeaveRemaining(req.TypeLeaveID, employeeNumber)
+	helpers.CheckErr("Error get leave balance @PostLeaveRequestEmployee - controller", errGet)
 
 	leave := structAPI.CreateLeaveRequest{
 		EmployeeNumber: employeeNumber,
@@ -77,19 +75,22 @@ func (c *LeaveController) PostLeaveRequest() {
 	strTotal := strconv.FormatFloat(result, 'f', 1, 64)
 
 	if req.TypeLeaveID != 11 && req.TypeLeaveID != 22 && req.TypeLeaveID != 33 && req.TypeLeaveID != 44 && req.TypeLeaveID != 55 && req.TypeLeaveID != 66 {
-		beego.Warning("error empty field type leave @PostLeaveRequest")
+		beego.Warning("Error empty field type leave @PostLeaveRequestEmployee - controller")
 		c.Ctx.Output.SetStatus(400)
 		resp.Error = errors.New("error empty field").Error()
+
 	} else if req.DateFrom == "" || req.DateTo == "" || req.BackOn == "" || req.ContactAddress == "" || req.ContactNumber == "" {
-		beego.Warning("error empty field @PostLeaveRequest")
+		beego.Warning("Error empty field @PostLeaveRequestEmployee - controller")
 		c.Ctx.Output.SetStatus(400)
-		resp.Error = errors.New("error empty field").Error()
+		resp.Error = errors.New("Error empty field").Error()
+
 	} else if result > float64(resGet.LeaveRemaining) {
-		beego.Warning("error leave balance @PostLeaveRequest")
+		beego.Warning("Error leave balance @PostLeaveRequestEmployee - controller")
 		c.Ctx.Output.SetStatus(400)
-		resp.Error = errors.New("your total leave is " + strTotal + " day and your " + resGet.TypeName + " balance is " + strBalance + " day left").Error()
+		resp.Error = errors.New("Your total leave is " + strTotal + " day and your " + resGet.TypeName + " balance is " + strBalance + " day left").Error()
+
 	} else {
-		errAddLeave := dbLeave.CreateLeaveRequest(
+		errAddLeave := logicLeave.CreateLeaveRequestEmployee(
 			leave.EmployeeNumber,
 			leave.TypeLeaveID,
 			leave.Reason,
@@ -102,7 +103,6 @@ func (c *LeaveController) PostLeaveRequest() {
 			leave.ContactNumber,
 			leave.Status,
 		)
-
 		if errAddLeave != nil {
 			resp.Error = errAddLeave.Error()
 			c.Ctx.Output.SetStatus(400)
@@ -113,24 +113,22 @@ func (c *LeaveController) PostLeaveRequest() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @PostLeaveRequest", err)
+		helpers.CheckErr("Failed giving output @PostLeaveRequestEmployee - controller", err)
 	}
 }
 
 // PostLeaveRequestSupervisor ...
 func (c *LeaveController) PostLeaveRequestSupervisor() {
 	var (
-		resp    structAPI.RespData
-		req     structAPI.ReqLeave
-		dbLeave db.LeaveRequest
-		dbUser  userLogic.User
+		req  structAPI.ReqLeave
+		resp structAPI.RespData
 	)
 
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @PostLeaveRequestSupervisor", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @PostLeaveRequestSupervisor - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -139,8 +137,8 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 
 	errMarshal := json.Unmarshal(body, &req)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @PostLeaveRequestSupervisor", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @PostLeaveRequestSupervisor - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -151,8 +149,8 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 	valueHalfDay := float64(0.5)
 	result := helpers.Multiply(totalDay, reqHalfDay, valueHalfDay)
 
-	resGet, errGet := dbUser.GetUserLeaveRemaining(req.TypeLeaveID, employeeNumber)
-	helpers.CheckErr("err get", errGet)
+	resGet, errGet := logicUser.GetUserLeaveRemaining(req.TypeLeaveID, employeeNumber)
+	helpers.CheckErr("Error get leave balance @PostLeaveRequestSupervisor - controller", errGet)
 
 	leave := structAPI.CreateLeaveRequest{
 		EmployeeNumber: employeeNumber,
@@ -172,19 +170,22 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 	strTotal := strconv.FormatFloat(result, 'f', 1, 64)
 
 	if req.TypeLeaveID != 11 && req.TypeLeaveID != 22 && req.TypeLeaveID != 33 && req.TypeLeaveID != 44 && req.TypeLeaveID != 55 && req.TypeLeaveID != 66 {
-		beego.Warning("error empty field type leave @PostLeaveRequestSupervisor")
+		beego.Warning("Error empty field type leave @PostLeaveRequestSupervisor - controller")
 		c.Ctx.Output.SetStatus(400)
-		resp.Error = errors.New("error empty field").Error()
+		resp.Error = errors.New("Error empty field").Error()
+
 	} else if req.DateFrom == "" || req.DateTo == "" || req.BackOn == "" || req.ContactAddress == "" || req.ContactNumber == "" {
-		beego.Warning("error empty field @PostLeaveRequestSupervisor")
+		beego.Warning("Error empty field @PostLeaveRequestSupervisor - controller")
 		c.Ctx.Output.SetStatus(400)
-		resp.Error = errors.New("error empty field").Error()
+		resp.Error = errors.New("Error empty field").Error()
+
 	} else if result > float64(resGet.LeaveRemaining) {
-		beego.Warning("error leave balance @PostLeaveRequestSupervisor")
+		beego.Warning("Error leave balance @PostLeaveRequestSupervisor - controller")
 		c.Ctx.Output.SetStatus(400)
-		resp.Error = errors.New("your total leave is " + strTotal + " day and your " + resGet.TypeName + " balance is " + strBalance + " day left").Error()
+		resp.Error = errors.New("Your total leave is " + strTotal + " day and your " + resGet.TypeName + " balance is " + strBalance + " day left").Error()
+
 	} else {
-		errAddLeave := dbLeave.CreateLeaveRequestSupervisor(
+		errAddLeave := logicLeave.CreateLeaveRequestSupervisor(
 			leave.EmployeeNumber,
 			leave.TypeLeaveID,
 			leave.Reason,
@@ -197,7 +198,6 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 			leave.ContactNumber,
 			leave.Status,
 		)
-
 		if errAddLeave != nil {
 			resp.Error = errAddLeave.Error()
 			c.Ctx.Output.SetStatus(400)
@@ -208,7 +208,7 @@ func (c *LeaveController) PostLeaveRequestSupervisor() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @PostLeaveRequestSupervisor", err)
+		helpers.CheckErr("Failed giving output @PostLeaveRequestSupervisor - controller", err)
 	}
 }
 
@@ -225,8 +225,8 @@ func (c *LeaveController) UpdateRequest() {
 
 	err := json.Unmarshal(body, &leave)
 	if err != nil {
-		helpers.CheckErr("unmarshall req body failed @UpdateRequest", err)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @UpdateRequest - controller", err)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
@@ -234,8 +234,8 @@ func (c *LeaveController) UpdateRequest() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @UpdateRequest", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @UpdateRequest - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -265,7 +265,7 @@ func (c *LeaveController) UpdateRequest() {
 
 	err = c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @UpdateRequest", err)
+		helpers.CheckErr("Failed giving output @UpdateRequest - controller", err)
 	}
 }
 
@@ -276,13 +276,13 @@ func (c *LeaveController) DeleteRequest() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @DeleteRequest", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @DeleteRequest - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	if err := logicLeave.DeleteRequest(id); err == nil {
-		resp.Body = "Deleted success"
+		resp.Body = "Delete request success"
 	} else {
 		resp.Error = err.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -290,7 +290,7 @@ func (c *LeaveController) DeleteRequest() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @DeleteRequest", err)
+		helpers.CheckErr("Failed giving output @DeleteRequest - controller", err)
 	}
 }
 
@@ -350,7 +350,7 @@ func (c *LeaveController) GetReportLeaveRequest() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetReportLeaveRequest", err)
+		helpers.CheckErr("failed giving output @GetReportLeaveRequest - controller", err)
 	}
 }
 
@@ -374,6 +374,6 @@ func (c *LeaveController) GetReportLeaveRequestTypeLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetReportLeaveRequest", err)
+		helpers.CheckErr("failed giving output @GetReportLeaveRequest - controller", err)
 	}
 }

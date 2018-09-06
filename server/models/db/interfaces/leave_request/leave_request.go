@@ -7,8 +7,8 @@ import (
 
 // IBaseLeaveRequest ...
 type IBaseLeaveRequest interface {
-	// CreateLeaveRequest
-	CreateLeaveRequest(
+	// CreateLeaveRequestEmployee
+	CreateLeaveRequestEmployee(
 		employeeNumber int64,
 		typeLeaveID int64,
 		reason string,
@@ -19,7 +19,8 @@ type IBaseLeaveRequest interface {
 		total float64,
 		address string,
 		contactLeave string,
-		status string) error
+		status string,
+	) error
 	// CreateLeaveRequestSupervisor
 	CreateLeaveRequestSupervisor(
 		employeeNumber int64,
@@ -32,7 +33,8 @@ type IBaseLeaveRequest interface {
 		total float64,
 		address string,
 		contactLeave string,
-		status string) error
+		status string,
+	) error
 	// UpdateRequest
 	UpdateRequest(
 		e *structAPI.UpdateLeaveRequest,

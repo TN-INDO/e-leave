@@ -37,7 +37,7 @@ export function registerUser(payload, pusher) {
 					message.success(body)
 					dispatch(clearField)
 					pusher('/admin')
-				} else if (error === "type request malform") {
+				} else if (error === "Type request malform") {
 					let errMsg = 'Error empty field!'
 					message.error(errMsg)
 				} else {

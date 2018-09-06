@@ -27,8 +27,8 @@ func (c *SupervisorController) GetPendingLeave() {
 	idStr := c.Ctx.Input.Param(":id")
 	supervisorID, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetPendingLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetPendingLeave - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -42,7 +42,7 @@ func (c *SupervisorController) GetPendingLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetPendingLeave - controller", err)
 	}
 }
 
@@ -55,8 +55,8 @@ func (c *SupervisorController) GetAcceptLeave() {
 	idStr := c.Ctx.Input.Param(":id")
 	supervisorID, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetAcceptLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetAcceptLeave - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -70,7 +70,7 @@ func (c *SupervisorController) GetAcceptLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetAcceptLeave", err)
+		helpers.CheckErr("failed giving output @GetAcceptLeave - controller", err)
 	}
 }
 
@@ -83,8 +83,8 @@ func (c *SupervisorController) GetRejectLeave() {
 	idStr := c.Ctx.Input.Param(":id")
 	supervisorID, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRejectLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRejectLeave - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -98,7 +98,7 @@ func (c *SupervisorController) GetRejectLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetRejectLeave", err)
+		helpers.CheckErr("Failed giving output @GetRejectLeave - controller", err)
 	}
 }
 
@@ -109,16 +109,16 @@ func (c *SupervisorController) AcceptStatusBySupervisor() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @AcceptStatusBySupervisor", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @AcceptStatusBySupervisor - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	employeeStr := c.Ctx.Input.Param(":enumber")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @AcceptStatusBySupervisor", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert enum failed @AcceptStatusBySupervisor - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -131,7 +131,7 @@ func (c *SupervisorController) AcceptStatusBySupervisor() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @AcceptStatusBySupervisor", err)
+		helpers.CheckErr("Failed giving output @AcceptStatusBySupervisor - controller", err)
 	}
 }
 
@@ -147,8 +147,8 @@ func (c *SupervisorController) RejectStatusBySv() {
 
 	errMarshal := json.Unmarshal(body, &leave)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @RejectStatusBySv", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Unmarshall req body failed @RejectStatusBySv - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -157,16 +157,16 @@ func (c *SupervisorController) RejectStatusBySv() {
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @RejectStatusBySv", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @RejectStatusBySv - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	employeeStr := c.Ctx.Input.Param(":enumber")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @RejectStatusBySv", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("convert employee number failed @RejectStatusBySv - controller", errCon)
+		resp.Error = errors.New("convert employee number failed").Error()
 		return
 	}
 
@@ -179,6 +179,6 @@ func (c *SupervisorController) RejectStatusBySv() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @RejectStatusBySv", err)
+		helpers.CheckErr("Failed giving output @RejectStatusBySv - controller", err)
 	}
 }

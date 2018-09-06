@@ -23,8 +23,8 @@ func (c *EmployeeController) GetRequestPending() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRequestPending", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRequestPending - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -38,7 +38,7 @@ func (c *EmployeeController) GetRequestPending() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetRequestPending", err)
+		helpers.CheckErr("Failed giving output @GetRequestPending - controller", err)
 	}
 }
 
@@ -49,8 +49,8 @@ func (c *EmployeeController) GetRequestAccept() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRequestAccept", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRequestAccept - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -64,7 +64,7 @@ func (c *EmployeeController) GetRequestAccept() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetRequestAccept", err)
+		helpers.CheckErr("Failed giving output @GetRequestAccept - controller", err)
 	}
 }
 
@@ -75,8 +75,8 @@ func (c *EmployeeController) GetRequestReject() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRequestReject", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRequestReject - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -90,6 +90,6 @@ func (c *EmployeeController) GetRequestReject() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetRequestReject", err)
+		helpers.CheckErr("Failed giving output @GetRequestReject - controller", err)
 	}
 }
