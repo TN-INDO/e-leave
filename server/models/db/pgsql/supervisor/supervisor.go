@@ -15,13 +15,12 @@ import (
 type Supervisor struct{}
 
 // GetEmployeePending ...
-func (u *Supervisor) GetEmployeePending(supervisorID int64) ([]structLogic.LeavePending, error) {
+func (u *Supervisor) GetEmployeePending(supervisorID int64) (reqPending []structLogic.LeavePending, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqPending    []structLogic.LeavePending
 	)
 
 	o := orm.NewOrm()
@@ -78,13 +77,12 @@ func (u *Supervisor) GetEmployeePending(supervisorID int64) ([]structLogic.Leave
 }
 
 // GetEmployeeApproved ...
-func (u *Supervisor) GetEmployeeApproved(supervisorID int64) ([]structLogic.LeaveAccept, error) {
+func (u *Supervisor) GetEmployeeApproved(supervisorID int64) (reqApprove []structLogic.LeaveAccept, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqApprove    []structLogic.LeaveAccept
 	)
 
 	o := orm.NewOrm()
@@ -143,13 +141,12 @@ func (u *Supervisor) GetEmployeeApproved(supervisorID int64) ([]structLogic.Leav
 }
 
 // GetEmployeeRejected ...
-func (u *Supervisor) GetEmployeeRejected(supervisorID int64) ([]structLogic.LeaveReject, error) {
+func (u *Supervisor) GetEmployeeRejected(supervisorID int64) (reqReject []structLogic.LeaveReject, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqReject     []structLogic.LeaveReject
 	)
 
 	o := orm.NewOrm()

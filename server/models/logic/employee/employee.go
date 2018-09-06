@@ -2,6 +2,7 @@ package employee
 
 import (
 	"server/helpers"
+
 	structLogic "server/structs/logic"
 )
 
@@ -9,7 +10,7 @@ import (
 func GetPendingRequest(employeeNumber int64) ([]structLogic.RequestPending, error) {
 	respGet, errGet := DBEmployee.GetPendingRequest(employeeNumber)
 	if errGet != nil {
-		helpers.CheckErr("Error get pending request @GetPendingRequest - logic", errGet)
+		helpers.CheckErr("Error get pending request @GetPendingRequest - logicEmployee", errGet)
 	}
 
 	return respGet, errGet
@@ -19,7 +20,7 @@ func GetPendingRequest(employeeNumber int64) ([]structLogic.RequestPending, erro
 func GetApprovedRequest(employeeNumber int64) ([]structLogic.RequestAccept, error) {
 	respGet, errGet := DBEmployee.GetApprovedRequest(employeeNumber)
 	if errGet != nil {
-		helpers.CheckErr("Error get approved request @GetApprovedRequest - logic", errGet)
+		helpers.CheckErr("Error get approved request @GetApprovedRequest - logicEmployee", errGet)
 	}
 
 	return respGet, errGet
@@ -29,7 +30,7 @@ func GetApprovedRequest(employeeNumber int64) ([]structLogic.RequestAccept, erro
 func GetRejectedRequest(employeeNumber int64) ([]structLogic.RequestReject, error) {
 	respGet, errGet := DBEmployee.GetRejectedRequest(employeeNumber)
 	if errGet != nil {
-		helpers.CheckErr("Error get rejected request @GetRejectedRequest - logic", errGet)
+		helpers.CheckErr("Error get rejected request @GetRejectedRequest - logicEmployee", errGet)
 	}
 
 	return respGet, errGet

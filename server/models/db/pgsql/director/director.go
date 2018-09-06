@@ -15,13 +15,12 @@ import (
 type Director struct{}
 
 // GetEmployeePending ...
-func (u *Director) GetEmployeePending() ([]structLogic.RequestPending, error) {
+func (u *Director) GetEmployeePending() (reqPending []structLogic.RequestPending, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqPending    []structLogic.RequestPending
 	)
 
 	o := orm.NewOrm()
@@ -78,13 +77,12 @@ func (u *Director) GetEmployeePending() ([]structLogic.RequestPending, error) {
 }
 
 // GetEmployeeApproved ...
-func (u *Director) GetEmployeeApproved() ([]structLogic.RequestAccept, error) {
+func (u *Director) GetEmployeeApproved() (reqApprove []structLogic.RequestAccept, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqApprove    []structLogic.RequestAccept
 	)
 
 	o := orm.NewOrm()
@@ -141,13 +139,12 @@ func (u *Director) GetEmployeeApproved() ([]structLogic.RequestAccept, error) {
 }
 
 // GetEmployeeRejected ...
-func (u *Director) GetEmployeeRejected() ([]structLogic.RequestReject, error) {
+func (u *Director) GetEmployeeRejected() (reqReject []structLogic.RequestReject, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqReject     []structLogic.RequestReject
 	)
 
 	o := orm.NewOrm()

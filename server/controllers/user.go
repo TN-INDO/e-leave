@@ -133,7 +133,7 @@ func (c *UserController) GetUserSummary() {
 		return
 	}
 
-	resGet, errGetSummary := logic.DBPostUser.GetSumarry(employeeNumber)
+	resGet, errGetSummary := logicUser.GetSumarry(employeeNumber)
 	if errGetSummary != nil {
 		resp.Error = errGetSummary.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -160,7 +160,7 @@ func (c *UserController) GetUserTypeLeave() {
 		return
 	}
 
-	resGet, errGet := logic.DBPostUser.GetUserTypeLeave(employeeNumber)
+	resGet, errGet := logicUser.GetUserTypeLeave(employeeNumber)
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -178,7 +178,7 @@ func (c *UserController) GetUserTypeLeave() {
 func (c *UserController) GetSupervisors() {
 	var resp structAPI.RespData
 
-	res, errGet := logic.DBPostUser.GetSupervisors()
+	res, errGet := logicUser.GetSupervisors()
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -195,7 +195,7 @@ func (c *UserController) GetSupervisors() {
 // GetTypeLeave ...
 func (c *UserController) GetTypeLeave() {
 	var resp structAPI.RespData
-	res, errGet := logic.DBPostUser.GetTypeLeave()
+	res, errGet := logicUser.GetTypeLeave()
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)

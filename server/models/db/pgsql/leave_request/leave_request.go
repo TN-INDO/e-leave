@@ -218,30 +218,6 @@ func (l *LeaveRequest) UpdateRequest(e *structAPI.UpdateLeaveRequest, id int64) 
 	return err
 }
 
-// DeleteRequest ...
-func (l *LeaveRequest) DeleteRequest(id int64) (err error) {
-	o := orm.NewOrm()
-	v := structDB.LeaveRequest{ID: id}
-
-	err = o.Read(&v)
-	if err == nil {
-		var num int64
-		if num, err = o.Delete(&structDB.LeaveRequest{ID: id}); err == nil {
-			beego.Debug("Number of records deleted in database:", num)
-		} else if err != nil {
-			helpers.CheckErr("Error deleted @DeleteRequest", err)
-			return errors.New("Error deleted leave request")
-		}
-	}
-
-	if err != nil {
-		helpers.CheckErr("Error deleted @DeleteRequest", err)
-		return errors.New("Delete failed, id not exist")
-	}
-
-	return err
-}
-
 // GetLeave ...
 func (l *LeaveRequest) GetLeave(id int64) (result structLogic.GetLeave, err error) {
 	var dbLeave structDB.LeaveRequest
@@ -268,6 +244,30 @@ func (l *LeaveRequest) GetLeave(id int64) (result structLogic.GetLeave, err erro
 	}
 
 	return result, err
+}
+
+// DeleteRequest ...
+func (l *LeaveRequest) DeleteRequest(id int64) (err error) {
+	o := orm.NewOrm()
+	v := structDB.LeaveRequest{ID: id}
+
+	err = o.Read(&v)
+	if err == nil {
+		var num int64
+		if num, err = o.Delete(&structDB.LeaveRequest{ID: id}); err == nil {
+			beego.Debug("Number of records deleted in database:", num)
+		} else if err != nil {
+			helpers.CheckErr("Error deleted @DeleteRequest", err)
+			return errors.New("Error deleted leave request")
+		}
+	}
+
+	if err != nil {
+		helpers.CheckErr("Error deleted @DeleteRequest", err)
+		return errors.New("Delete failed, id not exist")
+	}
+
+	return err
 }
 
 // UpdateLeaveRemaningApprove ...
@@ -331,8 +331,11 @@ func (l *LeaveRequest) UpdateLeaveRemaningCancel(total float64, employeeNumber i
 }
 
 // DownloadReportCSV ...
-func (l *LeaveRequest) DownloadReportCSV(query *structAPI.RequestReport,
-	path string) (err error) {
+func (l *LeaveRequest) DownloadReportCSV(
+	fromDate string,
+	toDate string,
+	path string,
+) (err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
@@ -378,14 +381,14 @@ func (l *LeaveRequest) DownloadReportCSV(query *structAPI.RequestReport,
 		And(leave.TableName() + `.created_at >= ?`).And(leave.TableName() + `.created_at <= ?`)
 	sql := qb.String()
 
-	statAcceptDirector := constant.StatusSuccessInDirector
+	statApprovedDirector := constant.StatusSuccessInDirector
 
-	count, errRaw := o.Raw(sql, statAcceptDirector, query.FromDate, query.ToDate).QueryRows(&report)
+	count, errRaw := o.Raw(sql, statApprovedDirector, fromDate, toDate).QueryRows(&report)
 	if errRaw != nil {
 		helpers.CheckErr("Failed query select @DownloadReportCSV", errRaw)
 		return errRaw
 	}
-	beego.Debug("Total leave request =", count)
+	beego.Debug("Total leave request save in csv=", count)
 
 	l.WriteCsv(path, report)
 
@@ -453,9 +456,11 @@ func (l *LeaveRequest) WriteCsv(path string, res []structLogic.ReportLeaveReques
 }
 
 // ReportLeaveRequest ...
-func (l *LeaveRequest) ReportLeaveRequest(query *structAPI.RequestReport) (res []structLogic.ReportLeaveRequest, err error) {
+func (l *LeaveRequest) ReportLeaveRequest(fromDate string, toDate string) (
+	report []structLogic.ReportLeaveRequest,
+	err error,
+) {
 	var (
-		report        []structLogic.ReportLeaveRequest
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
@@ -501,22 +506,28 @@ func (l *LeaveRequest) ReportLeaveRequest(query *structAPI.RequestReport) (res [
 		OrderBy("strftime(" + leave.TableName() + ".date_from) ASC ")
 	sql := qb.String()
 
-	statAcceptDirector := constant.StatusSuccessInDirector
+	statApprovedDirector := constant.StatusSuccessInDirector
 
-	count, errRaw := o.Raw(sql, query.FromDate, query.ToDate, statAcceptDirector).QueryRows(&report)
+	count, errRaw := o.Raw(sql, fromDate, toDate, statApprovedDirector).QueryRows(&report)
 	if errRaw != nil {
 		helpers.CheckErr("Failed query select @ReportLeaveRequest", errRaw)
 		return report, errRaw
 	}
-	beego.Debug("Total leave request =", count)
+	beego.Debug("Total leave request download =", count)
 
 	return report, err
 }
 
 // ReportLeaveRequestTypeLeave ...
-func (l *LeaveRequest) ReportLeaveRequestTypeLeave(query *structAPI.RequestReportTypeLeave) (res []structLogic.ReportLeaveRequest, err error) {
+func (l *LeaveRequest) ReportLeaveRequestTypeLeave(
+	fromDate string,
+	toDate string,
+	typeLeaveID string,
+) (
+	report []structLogic.ReportLeaveRequest,
+	err error,
+) {
 	var (
-		report        []structLogic.ReportLeaveRequest
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
@@ -568,14 +579,14 @@ func (l *LeaveRequest) ReportLeaveRequestTypeLeave(query *structAPI.RequestRepor
 	// 	helpers.CheckErr("convert id failed @ReportLeaveRequestTypeLeave", errCon)
 	// }
 
-	statAcceptDirector := constant.StatusSuccessInDirector
+	statApprovedDirector := constant.StatusSuccessInDirector
 
-	count, errRaw := o.Raw(sql, query.FromDate, query.ToDate, statAcceptDirector, query.TypeLeaveID).QueryRows(&report)
+	count, errRaw := o.Raw(sql, fromDate, toDate, statApprovedDirector, typeLeaveID).QueryRows(&report)
 	if errRaw != nil {
 		helpers.CheckErr("Failed query select @ReportLeaveRequestTypeLeave", errRaw)
 		return report, errRaw
 	}
-	beego.Debug("Total leave request =", count)
+	beego.Debug("Total leave request by type leave download =", count)
 
 	return report, err
 }

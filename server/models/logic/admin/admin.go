@@ -3,38 +3,68 @@ package admin
 import (
 	"errors"
 	"server/helpers"
-	logicLeave "server/models/db/pgsql/leave_request"
-	logicUser "server/models/db/pgsql/user"
+
+	structDB "server/structs/db"
 	structLogic "server/structs/logic"
 
 	"github.com/astaxie/beego/orm"
 )
 
-// GetEmployeePendingRequest ...
-func GetEmployeePendingRequest() ([]structLogic.RequestPending, error) {
-	respGet, errGet := DBAdmin.GetEmployeePending()
+// GetUsers ...
+func GetUsers() ([]structDB.User, error) {
+	respGet, errGet := DBAdmin.GetUsers()
 	if errGet != nil {
-		helpers.CheckErr("Error get pending request @GetEmployeePendingRequest - logicDirector", errGet)
+		helpers.CheckErr("Error get users @GetUsers - logicAdmin", errGet)
 	}
 
 	return respGet, errGet
 }
 
-// GetEmployeeApprovedRequest ...
-func GetEmployeeApprovedRequest() ([]structLogic.RequestAccept, error) {
-	respGet, errGet := DBAdmin.GetEmployeeApproved()
+// GetUser ...
+func GetUser(employeeNumber int64) (structDB.User, error) {
+	respGet, errGet := DBAdmin.GetUser(employeeNumber)
 	if errGet != nil {
-		helpers.CheckErr("Error get approved request @GetEmployeeApprovedRequest - logicDirector", errGet)
+		helpers.CheckErr("Error get user @GetUser - logicAdmin", errGet)
 	}
 
 	return respGet, errGet
 }
 
-// GetEmployeeRejectedRequest ...
-func GetEmployeeRejectedRequest() ([]structLogic.RequestReject, error) {
-	respGet, errGet := DBAdmin.GetEmployeeRejected()
+// DeleteUser ...
+func DeleteUser(employeeNumber int64) error {
+	errDelete := DBAdmin.DeleteUser(employeeNumber)
+	if errDelete != nil {
+		helpers.CheckErr("Error delete user @DeleteUser - logicAdmin", errDelete)
+	}
+
+	return errDelete
+}
+
+// GetLeaveRequestPending ...
+func GetLeaveRequestPending() ([]structLogic.RequestPending, error) {
+	respGet, errGet := DBAdmin.GetLeaveRequestPending()
 	if errGet != nil {
-		helpers.CheckErr("Error get rejected request @GetEmployeeRejectedRequest - logicDirector", errGet)
+		helpers.CheckErr("Error get leave request pending @GetLeaveRequestPending - logicAdmin", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// GetLeaveRequestApproved ...
+func GetLeaveRequestApproved() ([]structLogic.RequestAccept, error) {
+	respGet, errGet := DBAdmin.GetLeaveRequestApproved()
+	if errGet != nil {
+		helpers.CheckErr("Error get leave request approve @GetLeaveRequestApproved - logicAdmin", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// GetLeaveRequestRejected ...
+func GetLeaveRequestRejected() ([]structLogic.RequestReject, error) {
+	respGet, errGet := DBAdmin.GetLeaveRequestRejected()
+	if errGet != nil {
+		helpers.CheckErr("Error get leave request reject @GetLeaveRequestRejected - logicAdmin", errGet)
 	}
 
 	return respGet, errGet
@@ -42,43 +72,39 @@ func GetEmployeeRejectedRequest() ([]structLogic.RequestReject, error) {
 
 // CancelRequestLeave ...
 func CancelRequestLeave(id int64, employeeNumber int64) (err error) {
-	var (
-		user  logicUser.User
-		leave logicLeave.LeaveRequest
-	)
 
 	o := orm.NewOrm()
 	err = o.Begin()
 	if err != nil {
-		helpers.CheckErr("Error begin @CancelRequestLeave - logicDirector", err)
+		helpers.CheckErr("Error begin @CancelRequestLeave - logicAdmin", err)
 		o.Rollback()
 		return errors.New("Failed transaction fench")
 	}
 
-	getDirector, errGetDirector := user.GetDirector()
-	helpers.CheckErr("Error get director @CancelRequestLeave - logicDirector", errGetDirector)
+	getDirector, errGetDirector := DBUser.GetDirector()
+	helpers.CheckErr("Error get director @CancelRequestLeave - logicAdmin", errGetDirector)
 
-	getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-	helpers.CheckErr("Error get employee @CancelRequestLeave - logicDirector", errGetEmployee)
+	getEmployee, errGetEmployee := DBUser.GetEmployee(employeeNumber)
+	helpers.CheckErr("Error get employee @CancelRequestLeave - logicAdmin", errGetEmployee)
 
-	getLeave, errGetLeave := leave.GetLeave(id)
-	helpers.CheckErr("Error get leave @CancelRequestLeave - logicDirector", errGetLeave)
+	getLeave, errGetLeave := DBLeave.GetLeave(id)
+	helpers.CheckErr("Error get leave @CancelRequestLeave - logicAdmin", errGetLeave)
 
-	errUp := leave.UpdateLeaveRemaningCancel(getLeave.Total, employeeNumber, getLeave.TypeLeaveID)
+	errUp := DBLeave.UpdateLeaveRemaningCancel(getLeave.Total, employeeNumber, getLeave.TypeLeaveID)
 	if errUp != nil {
-		helpers.CheckErr("Error update cancel leave request @CancelRequestLeave - logicDirector", errUp)
+		helpers.CheckErr("Error update cancel leave request @CancelRequestLeave - logicAdmin", errUp)
 		o.Rollback()
 	}
 
-	errDelete := leave.DeleteRequest(id)
+	errDelete := DBLeave.DeleteRequest(id)
 	if errDelete != nil {
-		helpers.CheckErr("Error delete leave request @CancelRequestLeave - logicDirector", errDelete)
+		helpers.CheckErr("Error delete leave request @CancelRequestLeave - logicAdmin", errDelete)
 		o.Rollback()
 	}
 
 	err = o.Commit()
 	if err != nil {
-		helpers.CheckErr("Error commit @CancelRequestLeave - logicDirector", err)
+		helpers.CheckErr("Error commit @CancelRequestLeave - logicAdmin", err)
 		o.Rollback()
 		return errors.New("Failed transaction fench")
 	}
@@ -89,4 +115,14 @@ func CancelRequestLeave(id int64, employeeNumber int64) (err error) {
 	}()
 
 	return err
+}
+
+// ResetUserTypeLeave ...
+func ResetUserTypeLeave(leaveRemaining float64, typeLeaveID int64) error {
+	errReset := DBAdmin.ResetUserTypeLeave(leaveRemaining, typeLeaveID)
+	if errReset != nil {
+		helpers.CheckErr("Error reset type leave @ResetUserTypeLeave - logicAdmin", errReset)
+	}
+
+	return errReset
 }

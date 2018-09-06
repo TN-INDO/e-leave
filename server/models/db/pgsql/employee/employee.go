@@ -15,13 +15,12 @@ import (
 type Employee struct{}
 
 // GetPendingRequest ...
-func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.RequestPending, error) {
+func (e *Employee) GetPendingRequest(employeeNumber int64) (reqPending []structLogic.RequestPending, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqPending    []structLogic.RequestPending
 	)
 
 	o := orm.NewOrm()
@@ -79,13 +78,12 @@ func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.Reques
 }
 
 // GetApprovedRequest ...
-func (e *Employee) GetApprovedRequest(employeeNumber int64) ([]structLogic.RequestAccept, error) {
+func (e *Employee) GetApprovedRequest(employeeNumber int64) (reqApprove []structLogic.RequestAccept, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqApprove    []structLogic.RequestAccept
 	)
 
 	o := orm.NewOrm()
@@ -142,13 +140,12 @@ func (e *Employee) GetApprovedRequest(employeeNumber int64) ([]structLogic.Reque
 }
 
 // GetRejectedRequest ...
-func (e *Employee) GetRejectedRequest(employeeNumber int64) ([]structLogic.RequestReject, error) {
+func (e *Employee) GetRejectedRequest(employeeNumber int64) (reqReject []structLogic.RequestReject, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqReject     []structLogic.RequestReject
 	)
 
 	o := orm.NewOrm()

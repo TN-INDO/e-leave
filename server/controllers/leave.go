@@ -11,7 +11,7 @@ import (
 
 	db "server/models/db/pgsql/leave_request"
 	userLogic "server/models/db/pgsql/user"
-
+	logicLeave "server/models/logic/leave"
 	structAPI "server/structs/api"
 
 	"github.com/astaxie/beego"
@@ -271,10 +271,7 @@ func (c *LeaveController) UpdateRequest() {
 
 // DeleteRequest ...
 func (c *LeaveController) DeleteRequest() {
-	var (
-		resp    structAPI.RespData
-		dbLeave db.LeaveRequest
-	)
+	var resp structAPI.RespData
 
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
@@ -284,7 +281,7 @@ func (c *LeaveController) DeleteRequest() {
 		return
 	}
 
-	if err := dbLeave.DeleteRequest(id); err == nil {
+	if err := logicLeave.DeleteRequest(id); err == nil {
 		resp.Body = "Deleted success"
 	} else {
 		resp.Error = err.Error()
@@ -299,8 +296,6 @@ func (c *LeaveController) DeleteRequest() {
 
 // GetDownloadReportCSV ...
 func (c *LeaveController) GetDownloadReportCSV() {
-	var dbLeave db.LeaveRequest
-
 	var reqDt = structAPI.RequestReport{
 		FromDate: c.Ctx.Input.Query("fromDate"),
 		ToDate:   c.Ctx.Input.Query("toDate"),
@@ -310,7 +305,7 @@ func (c *LeaveController) GetDownloadReportCSV() {
 	fileName := "report_leave_request_" + dt.Format("20060102")
 	path := constant.GOPATH + "/src/" + constant.GOAPP + "/storages/" + fileName + ".csv"
 
-	errGet := dbLeave.DownloadReportCSV(&reqDt, path)
+	errGet := logicLeave.DownloadReportCSV(&reqDt, path)
 	if errGet != nil {
 		beego.Debug("Error get csv @GetDownloadReportCSV", errGet)
 	}
@@ -338,17 +333,14 @@ func (c *LeaveController) GetDownloadReportCSV() {
 
 // GetReportLeaveRequest ...
 func (c *LeaveController) GetReportLeaveRequest() {
-	var (
-		resp    structAPI.RespData
-		dbLeave db.LeaveRequest
-	)
+	var resp structAPI.RespData
 
 	var reqDt = structAPI.RequestReport{
 		FromDate: c.Ctx.Input.Query("fromDate"),
 		ToDate:   c.Ctx.Input.Query("toDate"),
 	}
 
-	resGet, errGetAcc := dbLeave.ReportLeaveRequest(&reqDt)
+	resGet, errGetAcc := logicLeave.ReportLeaveRequest(&reqDt)
 	if errGetAcc != nil {
 		resp.Error = errGetAcc.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -364,10 +356,7 @@ func (c *LeaveController) GetReportLeaveRequest() {
 
 // GetReportLeaveRequestTypeLeave ...
 func (c *LeaveController) GetReportLeaveRequestTypeLeave() {
-	var (
-		resp    structAPI.RespData
-		dbLeave db.LeaveRequest
-	)
+	var resp structAPI.RespData
 
 	var reqDt = structAPI.RequestReportTypeLeave{
 		FromDate:    c.Ctx.Input.Query("fromDate"),
@@ -375,7 +364,7 @@ func (c *LeaveController) GetReportLeaveRequestTypeLeave() {
 		TypeLeaveID: c.Ctx.Input.Query("typeID"),
 	}
 
-	resGet, errGetAcc := dbLeave.ReportLeaveRequestTypeLeave(&reqDt)
+	resGet, errGetAcc := logicLeave.ReportLeaveRequestTypeLeave(&reqDt)
 	if errGetAcc != nil {
 		resp.Error = errGetAcc.Error()
 		c.Ctx.Output.SetStatus(400)

@@ -45,6 +45,7 @@ type IBaseLeaveRequest interface {
 		result structLogic.GetLeave,
 		err error,
 	)
+
 	// UpdateLeaveRemaningApprove
 	UpdateLeaveRemaningApprove(
 		total float64,
@@ -57,9 +58,11 @@ type IBaseLeaveRequest interface {
 		employeeNumber int64,
 		typeID int64,
 	) (err error)
+
 	// DownloadReportCSV
 	DownloadReportCSV(
-		query *structAPI.RequestReport,
+		fromDate string,
+		toDate string,
 		path string,
 	) (err error)
 	// WriteCsv
@@ -67,14 +70,22 @@ type IBaseLeaveRequest interface {
 		path string,
 		res []structLogic.ReportLeaveRequest,
 	) error
+
 	// ReportLeaveRequest
-	ReportLeaveRequest(query *structAPI.RequestReport) (
-		res []structLogic.ReportLeaveRequest,
+	ReportLeaveRequest(
+		fromDate string,
+		toDate string,
+	) (
+		report []structLogic.ReportLeaveRequest,
 		err error,
 	)
 	// ReportLeaveRequestTypeLeave
-	ReportLeaveRequestTypeLeave(query *structAPI.RequestReportTypeLeave) (
-		res []structLogic.ReportLeaveRequest,
+	ReportLeaveRequestTypeLeave(
+		fromDate string,
+		toDate string,
+		typeLeaveID string,
+	) (
+		report []structLogic.ReportLeaveRequest,
 		err error,
 	)
 }

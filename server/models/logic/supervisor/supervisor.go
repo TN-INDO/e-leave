@@ -2,8 +2,7 @@ package supervisor
 
 import (
 	"server/helpers"
-	logicLeave "server/models/db/pgsql/leave_request"
-	logicUser "server/models/db/pgsql/user"
+
 	structLogic "server/structs/logic"
 )
 
@@ -11,7 +10,7 @@ import (
 func GetEmployeePending(supervisorID int64) ([]structLogic.LeavePending, error) {
 	respGet, errGet := DBSupervisor.GetEmployeePending(supervisorID)
 	if errGet != nil {
-		helpers.CheckErr("Error get pending request @GetEmployeePending - logic", errGet)
+		helpers.CheckErr("Error get pending request @GetEmployeePending - logicSupervisor", errGet)
 	}
 
 	return respGet, errGet
@@ -21,7 +20,7 @@ func GetEmployeePending(supervisorID int64) ([]structLogic.LeavePending, error) 
 func GetEmployeeApproved(supervisorID int64) ([]structLogic.LeaveAccept, error) {
 	respGet, errGet := DBSupervisor.GetEmployeeApproved(supervisorID)
 	if errGet != nil {
-		helpers.CheckErr("Error get approved request @GetEmployeeApproved - logic", errGet)
+		helpers.CheckErr("Error get approved request @GetEmployeeApproved - logicSupervisor", errGet)
 	}
 
 	return respGet, errGet
@@ -31,7 +30,7 @@ func GetEmployeeApproved(supervisorID int64) ([]structLogic.LeaveAccept, error) 
 func GetEmployeeRejected(supervisorID int64) ([]structLogic.LeaveReject, error) {
 	respGet, errGet := DBSupervisor.GetEmployeeRejected(supervisorID)
 	if errGet != nil {
-		helpers.CheckErr("Error get rejected request @GetEmployeeRejected - logic", errGet)
+		helpers.CheckErr("Error get rejected request @GetEmployeeRejected - logicSupervisor", errGet)
 	}
 
 	return respGet, errGet
@@ -39,31 +38,27 @@ func GetEmployeeRejected(supervisorID int64) ([]structLogic.LeaveReject, error) 
 
 // ApproveBySupervisor ...
 func ApproveBySupervisor(id int64, employeeNumber int64) error {
-	var (
-		user  logicUser.User
-		leave logicLeave.LeaveRequest
-	)
 
-	getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-	helpers.CheckErr("Error get employee @ApproveBySupervisor", errGetEmployee)
+	getEmployee, errGetEmployee := DBUser.GetEmployee(employeeNumber)
+	helpers.CheckErr("Error get employee @ApproveBySupervisor - logicSupervisor", errGetEmployee)
 
-	getSupervisorID, errGetSupervisorID := user.GetSupervisor(employeeNumber)
-	helpers.CheckErr("Error get supervisor id @ApproveBySupervisor", errGetSupervisorID)
+	getSupervisorID, errGetSupervisorID := DBUser.GetSupervisor(employeeNumber)
+	helpers.CheckErr("Error get supervisor id @ApproveBySupervisor - logicSupervisor", errGetSupervisorID)
 
-	getSupervisor, errGetSupervisor := user.GetEmployee(getSupervisorID.SupervisorID)
-	helpers.CheckErr("Error get supervisor @ApproveBySupervisor", errGetSupervisor)
+	getSupervisor, errGetSupervisor := DBUser.GetEmployee(getSupervisorID.SupervisorID)
+	helpers.CheckErr("Error get supervisor @ApproveBySupervisor - logicSupervisor", errGetSupervisor)
 
-	getDirector, errGetDirector := user.GetDirector()
-	helpers.CheckErr("Error get director @ApproveBySupervisor", errGetDirector)
+	getDirector, errGetDirector := DBUser.GetDirector()
+	helpers.CheckErr("Error get director @ApproveBySupervisor - logicSupervisor", errGetDirector)
 
-	getLeave, errGetLeave := leave.GetLeave(id)
-	helpers.CheckErr("Error get leave @ApproveBySupervisor", errGetLeave)
+	getLeave, errGetLeave := DBLeave.GetLeave(id)
+	helpers.CheckErr("Error get leave @ApproveBySupervisor - logicSupervisor", errGetLeave)
 
 	actionBy := getSupervisor.Name
 
 	errApprove := DBSupervisor.ApproveBySupervisor(id, employeeNumber, actionBy)
 	if errApprove != nil {
-		helpers.CheckErr("Error approved request @ApproveBySupervisor - logic", errApprove)
+		helpers.CheckErr("Error approved request @ApproveBySupervisor - logicSupervisor", errApprove)
 	}
 
 	go func() {
@@ -76,29 +71,25 @@ func ApproveBySupervisor(id int64, employeeNumber int64) error {
 
 // RejectBySupervisor ...
 func RejectBySupervisor(l *structLogic.LeaveReason, id int64, employeeNumber int64) error {
-	var (
-		user  logicUser.User
-		leave logicLeave.LeaveRequest
-	)
 
-	getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-	helpers.CheckErr("Error get employee @RejectBySupervisor", errGetEmployee)
+	getEmployee, errGetEmployee := DBUser.GetEmployee(employeeNumber)
+	helpers.CheckErr("Error get employee @RejectBySupervisor - logicSupervisor", errGetEmployee)
 
-	getSupervisorID, errGetSupervisorID := user.GetSupervisor(employeeNumber)
-	helpers.CheckErr("Error get supervisor id @RejectBySupervisor", errGetSupervisorID)
+	getSupervisorID, errGetSupervisorID := DBUser.GetSupervisor(employeeNumber)
+	helpers.CheckErr("Error get supervisor id @RejectBySupervisor - logicSupervisor", errGetSupervisorID)
 
-	getSupervisor, errGetSupervisor := user.GetEmployee(getSupervisorID.SupervisorID)
-	helpers.CheckErr("Error get supervisor @RejectBySupervisor", errGetSupervisor)
+	getSupervisor, errGetSupervisor := DBUser.GetEmployee(getSupervisorID.SupervisorID)
+	helpers.CheckErr("Error get supervisor @RejectBySupervisor - logicSupervisor", errGetSupervisor)
 
-	getLeave, errGetLeave := leave.GetLeave(id)
-	helpers.CheckErr("Error get leave @RejectBySupervisor", errGetLeave)
+	getLeave, errGetLeave := DBLeave.GetLeave(id)
+	helpers.CheckErr("Error get leave @RejectBySupervisor - logicSupervisor", errGetLeave)
 
 	rejectReason := l.RejectReason
 	actionBy := getSupervisor.Name
 
 	errReject := DBSupervisor.RejectBySupervisor(l, id, employeeNumber, actionBy)
 	if errReject != nil {
-		helpers.CheckErr("Error rejected request @RejectBySupervisor - logic", errReject)
+		helpers.CheckErr("Error rejected request @RejectBySupervisor - logicSupervisor", errReject)
 	}
 
 	go func() {

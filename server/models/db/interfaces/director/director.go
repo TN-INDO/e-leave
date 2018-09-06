@@ -9,18 +9,18 @@ import (
 type IBaseDirector interface {
 	// GetEmployeePending
 	GetEmployeePending() (
-		[]structLogic.RequestPending,
-		error,
+		reqPending []structLogic.RequestPending,
+		err error,
 	)
 	// GetEmployeeApproved
 	GetEmployeeApproved() (
-		[]structLogic.RequestAccept,
-		error,
+		reqApprove []structLogic.RequestAccept,
+		err error,
 	)
 	// GetEmployeeRejected
 	GetEmployeeRejected() (
-		[]structLogic.RequestReject,
-		error,
+		reqReject []structLogic.RequestReject,
+		err error,
 	)
 
 	// ApproveByDirector

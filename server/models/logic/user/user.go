@@ -6,10 +6,11 @@ import (
 	"server/helpers"
 	"time"
 
-	"golang.org/x/crypto/bcrypt"
-
 	structAPI "server/structs/api"
+	structDB "server/structs/db"
 	structLogic "server/structs/logic"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // UserLogin ...
@@ -55,12 +56,12 @@ func ForgotPassword(e *structLogic.PasswordReset) error {
 
 	respCount, errCount := DBPostUser.CountUserEmail(e.Email)
 	if errCount != nil {
-		helpers.CheckErr("Error get pending request @GetEmployeePendingRequest - logicDirector", errCount)
+		helpers.CheckErr("Error count user @ForgotPassword - logicUser", errCount)
 	}
 
 	respGet, errGet := DBPostUser.GetUser(e.Email)
 	if errGet != nil {
-		helpers.CheckErr("Error get pending request @GetEmployeePendingRequest - logicDirector", errGet)
+		helpers.CheckErr("Error get user @ForgotPassword - logicUser", errGet)
 	}
 
 	if respCount == 0 {
@@ -69,7 +70,7 @@ func ForgotPassword(e *structLogic.PasswordReset) error {
 
 	errUp := DBPostUser.ForgotPassword(e)
 	if errUp != nil {
-		helpers.CheckErr("Error get pending request @GetEmployeePendingRequest - logicDirector", errUp)
+		helpers.CheckErr("Error forgot password @ForgotPassword - logicUser", errUp)
 	}
 
 	go func() {
@@ -79,32 +80,96 @@ func ForgotPassword(e *structLogic.PasswordReset) error {
 	return errUp
 }
 
-// // GetEmployeePendingRequest ...
-// func GetEmployeePendingRequest() ([]structLogic.RequestPending, error) {
-// 	respGet, errGet := DBAdmin.GetEmployeePending()
-// 	if errGet != nil {
-// 		helpers.CheckErr("Error get pending request @GetEmployeePendingRequest - logicDirector", errGet)
-// 	}
+// GetDirector ...
+func GetDirector() (structLogic.GetDirector, error) {
+	respGet, errGet := DBPostUser.GetDirector()
+	if errGet != nil {
+		helpers.CheckErr("Error get director @GetDirector - logicUser", errGet)
+	}
 
-// 	return respGet, errGet
-// }
+	return respGet, errGet
+}
 
-// // GetEmployeeApprovedRequest ...
-// func GetEmployeeApprovedRequest() ([]structLogic.RequestAccept, error) {
-// 	respGet, errGet := DBAdmin.GetEmployeeApproved()
-// 	if errGet != nil {
-// 		helpers.CheckErr("Error get approved request @GetEmployeeApprovedRequest - logicDirector", errGet)
-// 	}
+// GetSupervisors ...
+func GetSupervisors() ([]structLogic.GetSupervisors, error) {
+	respGet, errGet := DBPostUser.GetSupervisors()
+	if errGet != nil {
+		helpers.CheckErr("Error get supervisors @GetSupervisors - logicUser", errGet)
+	}
 
-// 	return respGet, errGet
-// }
+	return respGet, errGet
+}
 
-// // GetEmployeeRejectedRequest ...
-// func GetEmployeeRejectedRequest() ([]structLogic.RequestReject, error) {
-// 	respGet, errGet := DBAdmin.GetEmployeeRejected()
-// 	if errGet != nil {
-// 		helpers.CheckErr("Error get rejected request @GetEmployeeRejectedRequest - logicDirector", errGet)
-// 	}
+// GetSupervisor ...
+func GetSupervisor(employeeNumber int64) (structLogic.GetSupervisor, error) {
+	respGet, errGet := DBPostUser.GetSupervisor(employeeNumber)
+	if errGet != nil {
+		helpers.CheckErr("Error get supervisor @GetSupervisor - logicUser", errGet)
+	}
 
-// 	return respGet, errGet
-// }
+	return respGet, errGet
+}
+
+// GetEmployee ...
+func GetEmployee(employeeNumber int64) (structLogic.GetEmployee, error) {
+	respGet, errGet := DBPostUser.GetEmployee(employeeNumber)
+	if errGet != nil {
+		helpers.CheckErr("Error get employee @GetEmployee - logicUser", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// CreateUserTypeLeave ...
+func CreateUserTypeLeave(
+	employeeNumber int64,
+	typeLeaveID int64,
+	leaveRemaining float64,
+) error {
+	errInsert := DBPostUser.CreateUserTypeLeave(employeeNumber, typeLeaveID, leaveRemaining)
+	if errInsert != nil {
+		helpers.CheckErr("Error insert user type leave @CreateUserTypeLeave - logicUser", errInsert)
+	}
+
+	return errInsert
+}
+
+// GetTypeLeave ...
+func GetTypeLeave() ([]structDB.TypeLeave, error) {
+	respGet, errGet := DBPostUser.GetTypeLeave()
+	if errGet != nil {
+		helpers.CheckErr("Error get type leave @GetTypeLeave - logicUser", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// GetUserTypeLeave ...
+func GetUserTypeLeave(employeeNumber int64) ([]structLogic.UserTypeLeave, error) {
+	respGet, errGet := DBPostUser.GetUserTypeLeave(employeeNumber)
+	if errGet != nil {
+		helpers.CheckErr("Error get user type leave @GetUserTypeLeave - logicUser", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// GetSumarry ...
+func GetSumarry(employeeNumber int64) ([]structLogic.UserSumarry, error) {
+	respGet, errGet := DBPostUser.GetSumarry(employeeNumber)
+	if errGet != nil {
+		helpers.CheckErr("Error get summary @GetSumarry - logicUser", errGet)
+	}
+
+	return respGet, errGet
+}
+
+// GetUserLeaveRemaining ...
+func GetUserLeaveRemaining(typeID int64, employeeNumber int64) (structLogic.UserTypeLeave, error) {
+	respGet, errGet := DBPostUser.GetUserLeaveRemaining(typeID, employeeNumber)
+	if errGet != nil {
+		helpers.CheckErr("Error get leave remaining @GetUserLeaveRemaining - logicUser", errGet)
+	}
+
+	return respGet, errGet
+}

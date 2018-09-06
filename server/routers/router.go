@@ -120,7 +120,7 @@ func init() {
 
 		// canceled leave request by admin
 		beego.NSRouter("/admin/leave/cancel/:id:int/:enumber:int",
-			&controllers.DirectorController{},
+			&controllers.AdminController{},
 			"put:CancelRequestLeave",
 		),
 		// reset leave balance by admin

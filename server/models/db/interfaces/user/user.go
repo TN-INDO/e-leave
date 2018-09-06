@@ -15,8 +15,10 @@ type IBaseUser interface {
 	)
 	// ForgotPassword
 	ForgotPassword(e *structLogic.PasswordReset) error
+	// GetUser
+	GetUser(email string) (employee structLogic.GetEmployee, err error)
+	// CountUserEmail
 	CountUserEmail(email string) (int, error)
-	GetUser(email string) (structLogic.GetEmployee, error)
 
 	// UpdatePassword
 	UpdatePassword(
@@ -26,47 +28,52 @@ type IBaseUser interface {
 
 	// GetDirector
 	GetDirector() (
-		result structLogic.GetDirector,
+		director structLogic.GetDirector,
 		err error,
 	)
 	// GetSupervisors
 	GetSupervisors() (
-		result []structLogic.GetSupervisors,
+		supervisor []structLogic.GetSupervisors,
+		err error,
+	)
+	// GetSupervisor
+	GetSupervisor(employeeNumber int64) (
+		supervisor structLogic.GetSupervisor,
 		err error,
 	)
 	// GetEmployee
 	GetEmployee(employeeNumber int64) (
-		result structLogic.GetEmployee,
+		employee structLogic.GetEmployee,
 		err error,
 	)
 
 	// GetTypeLeave
 	GetTypeLeave() (
-		result []structDB.TypeLeave,
+		typeLeave []structDB.TypeLeave,
+		err error,
+	)
+	// CreateUserTypeLeave
+	CreateUserTypeLeave(
+		employeeNumber int64,
+		typeLeaveID int64,
+		leaveRemaining float64,
+	) error
+	// GetUserTypeLeave
+	GetUserTypeLeave(employeeNumber int64) (
+		userTypeLeave []structLogic.UserTypeLeave,
 		err error,
 	)
 	// GetSumarry
 	GetSumarry(employeeNumber int64) (
-		[]structLogic.UserSumarry,
-		error,
+		sumarry []structLogic.UserSumarry,
+		err error,
 	)
 	// GetUserLeaveRemaining
 	GetUserLeaveRemaining(
 		typeID int64,
 		employeeNumber int64,
 	) (
-		result structLogic.UserTypeLeave,
-		err error,
-	)
-
-	// GetSupervisor
-	GetSupervisor(employeeNumber int64) (
-		result structLogic.GetSupervisor,
-		err error,
-	)
-	// GetUserTypeLeave
-	GetUserTypeLeave(employeeNumber int64) (
-		result []structLogic.UserTypeLeave,
+		userTypeLeave structLogic.UserTypeLeave,
 		err error,
 	)
 }
