@@ -1,14 +1,68 @@
 package admin
 
 import (
+	"encoding/base64"
 	"errors"
 	"server/helpers"
+	"strconv"
+	"strings"
 
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
 
 	"github.com/astaxie/beego/orm"
+	"golang.org/x/crypto/bcrypt"
 )
+
+// CreateUser ...
+func CreateUser(user structDB.User) error {
+
+	resCountEmployee, errCountEmployee := DBUser.CountUserEmployeeNumber(user.EmployeeNumber)
+	helpers.CheckErr("Error get users @GetUsers - logicAdmin", errCountEmployee)
+
+	resCountEmail, errCountEmail := DBUser.CountUserEmail(user.Email)
+	helpers.CheckErr("Error get users @GetUsers - logicAdmin", errCountEmail)
+
+	passwordString := user.Password
+	bsEmployeeNumber := []byte(strconv.Itoa(int(user.EmployeeNumber)))
+	arrPassword := []byte(passwordString)
+
+	employeeNumberStr := strconv.FormatInt(user.EmployeeNumber, 10)
+
+	if employeeNumberStr == "" || user.Name == "" || user.Gender == "" || user.Position == "" || user.StartWorkingDate == "" || user.MobilePhone == "" || user.Email == "" || user.Password == "" || user.Role == "" {
+		return errors.New("Error empty field ")
+	}
+	if len(bsEmployeeNumber) != 5 {
+		return errors.New("Employee number must length must be 5")
+	}
+	if resCountEmployee > 0 {
+		return errors.New("Employee number already register")
+	}
+	if resCountEmail > 0 {
+		return errors.New("Email already register")
+	}
+	if len(arrPassword) < 7 {
+		return errors.New("Password length must be 7")
+	}
+
+	hashedBytes, errHash := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
+	helpers.CheckErr("Error hash password @CreateUser", errHash)
+
+	user.Email = strings.ToLower(user.Email)
+	user.Password = base64.StdEncoding.EncodeToString(hashedBytes)
+
+	errInsert := DBAdmin.AddUser(user)
+	if errInsert != nil {
+		helpers.CheckErr("Error insert @CreateUser", errInsert)
+		return errInsert
+	}
+
+	go func() {
+		helpers.GoMailRegisterPassword(user.Email, passwordString)
+	}()
+
+	return errInsert
+}
 
 // GetUsers ...
 func GetUsers() ([]structDB.User, error) {

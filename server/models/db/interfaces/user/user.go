@@ -19,6 +19,8 @@ type IBaseUser interface {
 	GetUser(email string) (employee structLogic.GetEmployee, err error)
 	// CountUserEmail
 	CountUserEmail(email string) (int, error)
+	// CountUserEmployeeNumber
+	CountUserEmployeeNumber(employeeNumber int64) (int, error)
 
 	// UpdatePassword
 	UpdatePassword(

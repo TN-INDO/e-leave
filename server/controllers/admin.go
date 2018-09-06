@@ -9,6 +9,7 @@ import (
 
 	logicAdmin "server/models/logic/admin"
 	logic "server/models/logic/user"
+	logicUser "server/models/logic/user"
 	structAPI "server/structs/api"
 	structDB "server/structs/db"
 
@@ -52,7 +53,7 @@ func (c *AdminController) CreateUser() {
 		SupervisorID:     reqUser.SupervisorID,
 	}
 
-	errAddUser := logic.DBPostAdmin.AddUser(user)
+	errAddUser := logicAdmin.CreateUser(user)
 	if errAddUser != nil {
 		resp.Error = errAddUser.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -60,33 +61,35 @@ func (c *AdminController) CreateUser() {
 		resp.Body = "Create user success"
 	}
 
-	if reqUser.Gender == "Male" && reqUser.Role == "employee" {
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Male" && reqUser.Role == "supervisor" {
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Female" && reqUser.Role == "employee" {
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Female" && reqUser.Role == "supervisor" {
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
-		logic.DBPostUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	}
+	go func() {
+		if reqUser.Gender == "Male" && reqUser.Role == "employee" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Male" && reqUser.Role == "supervisor" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Female" && reqUser.Role == "employee" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Female" && reqUser.Role == "supervisor" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		}
+	}()
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {

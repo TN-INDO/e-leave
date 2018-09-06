@@ -55,7 +55,24 @@ func (u *User) CountUserEmail(email string) (int, error) {
 	o := orm.NewOrm()
 	errGet := o.Raw(`SELECT count(*) as Count FROM `+dbUser.TableName()+` WHERE email = ?`, email).QueryRow(&count)
 	if errGet != nil {
-		helpers.CheckErr("Failed query select @GetTypeLeave", errGet)
+		helpers.CheckErr("Failed query select @CountUserEmail", errGet)
+		return count, errors.New("Error count user by email")
+	}
+
+	return count, errGet
+}
+
+// CountUserEmployeeNumber ...
+func (u *User) CountUserEmployeeNumber(employeeNumber int64) (int, error) {
+	var (
+		dbUser structDB.User
+		count  int
+	)
+
+	o := orm.NewOrm()
+	errGet := o.Raw(`SELECT count(*) as Count FROM `+dbUser.TableName()+` WHERE employee_number = ?`, employeeNumber).QueryRow(&count)
+	if errGet != nil {
+		helpers.CheckErr("Failed query select @CountUserEmployeeNumber", errGet)
 		return count, errors.New("Error count user by email")
 	}
 

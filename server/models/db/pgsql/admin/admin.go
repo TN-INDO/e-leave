@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"encoding/base64"
 	"errors"
 	"server/helpers"
 	"server/helpers/constant"
@@ -9,12 +8,10 @@ import (
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
 
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Admin ...
@@ -22,50 +19,15 @@ type Admin struct{}
 
 // AddUser ...
 func (u *Admin) AddUser(user structDB.User) error {
-	var (
-		count               int
-		countEmployeeNumber int
-	)
-
 	o := orm.NewOrm()
 
-	o.Raw(`SELECT count(*) as Count FROM `+user.TableName()+` WHERE email = ?`, user.Email).QueryRow(&count)
-	o.Raw(`SELECT count(*) as Count FROM `+user.TableName()+` WHERE employee_number = ?`, user.EmployeeNumber).QueryRow(&countEmployeeNumber)
-
-	passwordString := user.Password
-	bsEmployeeNumber := []byte(strconv.Itoa(int(user.EmployeeNumber)))
-	arrPassword := []byte(passwordString)
-
-	if len(bsEmployeeNumber) != 5 {
-		return errors.New("Employee number must field and length must be 5")
-	} else if countEmployeeNumber > 0 {
-		return errors.New("Employee number already register")
-	} else if user.Name == "" || user.Gender == "" || user.Position == "" || user.StartWorkingDate == "" || user.MobilePhone == "" || user.Email == "" || user.Password == "" || user.Role == "" {
-		return errors.New("Error empty field ")
-	} else if count > 0 {
-		return errors.New("Email already register")
-	} else if len(arrPassword) < 7 {
-		return errors.New("Password length must be 7")
-	} else {
-		hashedBytes, errHash := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
-		helpers.CheckErr("Error hash password @AddUser", errHash)
-
-		user.Email = strings.ToLower(user.Email)
-		user.Password = base64.StdEncoding.EncodeToString(hashedBytes)
-
-		_, err := o.Insert(&user)
-		if err != nil {
-			helpers.CheckErr("Error insert @AddUser", err)
-			return errors.New("Insert users failed")
-		}
-
-		go func() {
-			helpers.GoMailRegisterPassword(user.Email, passwordString)
-
-		}()
-
-		return err
+	_, err := o.Insert(&user)
+	if err != nil {
+		helpers.CheckErr("Error insert @AddUser", err)
+		return errors.New("Insert users failed")
 	}
+
+	return err
 }
 
 // GetUsers ...
