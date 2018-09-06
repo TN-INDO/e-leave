@@ -19,6 +19,7 @@ func UserLogin(loginData *structAPI.ReqLogin) (respLogin structAPI.RespLogin, er
 	respGet, errGet := DBPostUser.UserLogin(loginData)
 	if errGet != nil {
 		helpers.CheckErr("Error get user login @UserLogin - logicUser", errGet)
+		return respLogin, errGet
 	}
 
 	if errGet == nil {
@@ -65,12 +66,13 @@ func ForgotPassword(e *structLogic.PasswordReset) error {
 	}
 
 	if respCount == 0 {
-		return errors.New("email not register")
+		return errors.New("Email not register")
 	}
 
 	errUp := DBPostUser.ForgotPassword(e)
 	if errUp != nil {
 		helpers.CheckErr("Error forgot password @ForgotPassword - logicUser", errUp)
+		return errUp
 	}
 
 	go func() {

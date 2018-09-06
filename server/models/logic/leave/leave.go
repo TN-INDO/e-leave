@@ -35,6 +35,7 @@ func CreateLeaveRequestEmployee(
 	errInsert := DBLeave.CreateLeaveRequestEmployee(employeeNumber, typeLeaveID, reason, dateFrom, dateTo, halfDates, backOn, total, address, contactLeave, status)
 	if errInsert != nil {
 		helpers.CheckErr("Error delete leave request @CreateLeaveRequestEmployee - logicLeave", errInsert)
+		return errInsert
 	}
 
 	go func() {
@@ -68,6 +69,7 @@ func CreateLeaveRequestSupervisor(
 	errInsert := DBLeave.CreateLeaveRequestSupervisor(employeeNumber, typeLeaveID, reason, dateFrom, dateTo, halfDates, backOn, total, address, contactLeave, status)
 	if errInsert != nil {
 		helpers.CheckErr("Error delete leave request @CreateLeaveRequestSupervisor - logicLeave", errInsert)
+		return errInsert
 	}
 
 	go func() {
@@ -102,6 +104,7 @@ func DeleteRequest(id int64) (err error) {
 	errDelete := DBLeave.DeleteRequest(id)
 	if errDelete != nil {
 		helpers.CheckErr("Error delete leave request @DeleteRequest - logicLeave", errDelete)
+		return errDelete
 	}
 
 	return errDelete
@@ -112,6 +115,7 @@ func UpdateLeaveRemaningApprove(total float64, employeeNumber int64, typeID int6
 	errUpdate := DBLeave.UpdateLeaveRemaningApprove(total, employeeNumber, typeID)
 	if errUpdate != nil {
 		helpers.CheckErr("Error update leave balance @UpdateLeaveRemaningApprove - logicLeave", errUpdate)
+		return errUpdate
 	}
 
 	return errUpdate
@@ -122,6 +126,7 @@ func UpdateLeaveRemaningCancel(total float64, employeeNumber int64, typeID int64
 	errUpdate := DBLeave.UpdateLeaveRemaningCancel(total, employeeNumber, typeID)
 	if errUpdate != nil {
 		helpers.CheckErr("Error update leave balance @UpdateLeaveRemaningCancel - logicLeave", errUpdate)
+		return errUpdate
 	}
 
 	return errUpdate

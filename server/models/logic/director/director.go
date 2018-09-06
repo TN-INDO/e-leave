@@ -78,12 +78,14 @@ func ApproveByDirector(id int64, employeeNumber int64) error {
 	if errApprove != nil {
 		helpers.CheckErr("Error approved request @ApproveByDirector - logicDirector", errApprove)
 		o.Rollback()
+		return errApprove
 	}
 
 	errUp := DBLeave.UpdateLeaveRemaningApprove(getLeave.Total, employeeNumber, getLeave.TypeLeaveID)
 	if errUp != nil {
 		helpers.CheckErr("Error update leave balance @ApproveByDirector - logicDirector", errUp)
 		o.Rollback()
+		return errUp
 	}
 
 	err = o.Commit()
@@ -98,7 +100,7 @@ func ApproveByDirector(id int64, employeeNumber int64) error {
 
 	}()
 
-	return errApprove
+	return err
 }
 
 // RejectByDirector ...
@@ -119,6 +121,7 @@ func RejectByDirector(l *structDB.LeaveRequest, id int64, employeeNumber int64) 
 	errApprove := DBDirector.RejectByDirector(l, id, employeeNumber, actionBy)
 	if errApprove != nil {
 		helpers.CheckErr("Error approved request @RejectByDirector - logicDirector", errApprove)
+		return errApprove
 	}
 
 	go func() {

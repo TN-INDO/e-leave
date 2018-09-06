@@ -59,6 +59,7 @@ func ApproveBySupervisor(id int64, employeeNumber int64) error {
 	errApprove := DBSupervisor.ApproveBySupervisor(id, employeeNumber, actionBy)
 	if errApprove != nil {
 		helpers.CheckErr("Error approved request @ApproveBySupervisor - logicSupervisor", errApprove)
+		return errApprove
 	}
 
 	go func() {
@@ -90,6 +91,7 @@ func RejectBySupervisor(l *structLogic.LeaveReason, id int64, employeeNumber int
 	errReject := DBSupervisor.RejectBySupervisor(l, id, employeeNumber, actionBy)
 	if errReject != nil {
 		helpers.CheckErr("Error rejected request @RejectBySupervisor - logicSupervisor", errReject)
+		return errReject
 	}
 
 	go func() {

@@ -35,6 +35,7 @@ func DeleteUser(employeeNumber int64) error {
 	errDelete := DBAdmin.DeleteUser(employeeNumber)
 	if errDelete != nil {
 		helpers.CheckErr("Error delete user @DeleteUser - logicAdmin", errDelete)
+		return errDelete
 	}
 
 	return errDelete
@@ -94,12 +95,14 @@ func CancelRequestLeave(id int64, employeeNumber int64) (err error) {
 	if errUp != nil {
 		helpers.CheckErr("Error update cancel leave request @CancelRequestLeave - logicAdmin", errUp)
 		o.Rollback()
+		return errUp
 	}
 
 	errDelete := DBLeave.DeleteRequest(id)
 	if errDelete != nil {
 		helpers.CheckErr("Error delete leave request @CancelRequestLeave - logicAdmin", errDelete)
 		o.Rollback()
+		return errDelete
 	}
 
 	err = o.Commit()
