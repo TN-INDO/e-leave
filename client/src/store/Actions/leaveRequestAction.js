@@ -38,7 +38,7 @@ export function SumbitLeave(payload, pusher) {
 					dispatch(clearField())
 					pusher('/employee/list-pending-request')
 					message.success('Create leave request success')
-				} else if (error === "type request malform") {
+				} else if (error === "Type request malform") {
 					message.error('Create failed, please check all field!')
 				} else {
 					message.error(error)
@@ -65,7 +65,7 @@ export function SumbitLeaveSupervisor(payload, pusher) {
 					dispatch(clearField())
 					pusher('/employee/list-pending-request')
 					message.success('Create leave request success')
-				} else if (error === "type request malform") {
+				} else if (error === "Type request malform") {
 					message.error('Create failed, please check all field!')
 				} else {
 					message.error(error)

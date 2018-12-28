@@ -7,7 +7,9 @@ import (
 	"server/helpers"
 	"strconv"
 
+	logicAdmin "server/models/logic/admin"
 	logic "server/models/logic/user"
+	logicUser "server/models/logic/user"
 	structAPI "server/structs/api"
 	structDB "server/structs/db"
 
@@ -31,8 +33,8 @@ func (c *AdminController) CreateUser() {
 
 	errMarshal := json.Unmarshal(body, &reqUser)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @CreateUser", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body failed @CreateUser - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -51,70 +53,47 @@ func (c *AdminController) CreateUser() {
 		SupervisorID:     reqUser.SupervisorID,
 	}
 
-	errAddUser := logic.DBPostAdmin.AddUser(user)
+	errAddUser := logicAdmin.CreateUser(user)
 	if errAddUser != nil {
 		resp.Error = errAddUser.Error()
 		c.Ctx.Output.SetStatus(400)
 	} else {
-		resp.Body = "create user success"
+		resp.Body = "Create user success"
 	}
 
-	if reqUser.Gender == "Male" && reqUser.Role == "employee" {
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Male" && reqUser.Role == "supervisor" {
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Female" && reqUser.Role == "employee" {
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	} else if reqUser.Gender == "Female" && reqUser.Role == "supervisor" {
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
-		logic.DBPostAdmin.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
-	}
+	go func() {
+		if reqUser.Gender == "Male" && reqUser.Role == "employee" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Male" && reqUser.Role == "supervisor" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Female" && reqUser.Role == "employee" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		} else if reqUser.Gender == "Female" && reqUser.Role == "supervisor" {
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 11, 12)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 22, 3)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 33, 30)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 44, 2)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 55, 90)
+			logicUser.CreateUserTypeLeave(user.EmployeeNumber, 66, 2)
+		}
+	}()
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @CreateUser", err)
-	}
-}
-
-// DeleteUser ...
-func (c *AdminController) DeleteUser() {
-	var resp structAPI.RespData
-
-	idStr := c.Ctx.Input.Param(":id")
-	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
-	if errCon != nil {
-		helpers.CheckErr("convert id failed @DeleteUser", errCon)
-		resp.Error = errors.New("convert id failed").Error()
-		return
-	}
-
-	if err := logic.DBPostAdmin.DeleteUser(employeeNumber); err == nil {
-		resp.Body = "Deleted success"
-	} else {
-		resp.Error = err.Error()
-		c.Ctx.Output.SetStatus(400)
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @DeleteUser", err)
+		helpers.CheckErr("Failed giving output @CreateUser - controller", err)
 	}
 }
 
@@ -122,7 +101,7 @@ func (c *AdminController) DeleteUser() {
 func (c *AdminController) GetUsers() {
 	var resp structAPI.RespData
 
-	res, errGet := logic.DBPostAdmin.GetUsers()
+	res, errGet := logicAdmin.GetUsers()
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -132,7 +111,7 @@ func (c *AdminController) GetUsers() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUsers", err)
+		helpers.CheckErr("Failed giving output @GetUsers - controller", err)
 	}
 }
 
@@ -143,12 +122,12 @@ func (c *AdminController) GetUser() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetRequestAccept", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetRequestAccept - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
-	res, errGet := logic.DBPostAdmin.GetUser(employeeNumber)
+	res, errGet := logicAdmin.GetUser(employeeNumber)
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -158,7 +137,32 @@ func (c *AdminController) GetUser() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUsers", err)
+		helpers.CheckErr("Failed giving output @GetUsers - controller", err)
+	}
+}
+
+// DeleteUser ...
+func (c *AdminController) DeleteUser() {
+	var resp structAPI.RespData
+
+	idStr := c.Ctx.Input.Param(":id")
+	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
+	if errCon != nil {
+		helpers.CheckErr("Convert id failed @DeleteUser - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
+		return
+	}
+
+	if err := logicAdmin.DeleteUser(employeeNumber); err == nil {
+		resp.Body = "Deleted success"
+	} else {
+		resp.Error = err.Error()
+		c.Ctx.Output.SetStatus(400)
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("Failed giving output @DeleteUser - controller", err)
 	}
 }
 
@@ -174,8 +178,8 @@ func (c *AdminController) UpdateUser() {
 
 	err := json.Unmarshal(body, &reqUser)
 	if err != nil {
-		helpers.CheckErr("unmarshall req body failed @UpdateUser", err)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @UpdateUser - controller", err)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
@@ -183,13 +187,13 @@ func (c *AdminController) UpdateUser() {
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @UpdateUser", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @UpdateUser - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	resTime, errTime := helpers.NowLoc("Asia/Jakarta")
-	helpers.CheckErr("err time", errTime)
+	helpers.CheckErr("Error get location time time @UpdateUser - controller", errTime)
 
 	user := structDB.User{
 		EmployeeNumber:   reqUser.EmployeeNumber,
@@ -214,7 +218,7 @@ func (c *AdminController) UpdateUser() {
 
 	err = c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @UpdateUser", err)
+		helpers.CheckErr("Failed giving output @UpdateUser - controller", err)
 	}
 }
 
@@ -222,7 +226,7 @@ func (c *AdminController) UpdateUser() {
 func (c *AdminController) GetRequestPending() {
 	var resp structAPI.RespData
 
-	resGet, errGetPending := logic.DBPostAdmin.GetLeaveRequestPending()
+	resGet, errGetPending := logicAdmin.GetLeaveRequestPending()
 	if errGetPending != nil {
 		resp.Error = errGetPending.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -240,7 +244,7 @@ func (c *AdminController) GetRequestPending() {
 func (c *AdminController) GetRequestAccept() {
 	var resp structAPI.RespData
 
-	resGet, errGetAccept := logic.DBPostAdmin.GetLeaveRequest()
+	resGet, errGetAccept := logicAdmin.GetLeaveRequestApproved()
 	if errGetAccept != nil {
 		resp.Error = errGetAccept.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -258,7 +262,7 @@ func (c *AdminController) GetRequestAccept() {
 func (c *AdminController) GetRequestReject() {
 	var resp structAPI.RespData
 
-	resGet, errGetReject := logic.DBPostAdmin.GetLeaveRequestReject()
+	resGet, errGetReject := logicAdmin.GetLeaveRequestRejected()
 	if errGetReject != nil {
 		resp.Error = errGetReject.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -272,16 +276,51 @@ func (c *AdminController) GetRequestReject() {
 	}
 }
 
+// CancelRequestLeave ...
+func (c *AdminController) CancelRequestLeave() {
+	var (
+		resp structAPI.RespData
+	)
+
+	idStr := c.Ctx.Input.Param(":id")
+	id, errCon := strconv.ParseInt(idStr, 0, 64)
+	if errCon != nil {
+		helpers.CheckErr("Convert id failed @CancelRequestLeave", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
+		return
+	}
+
+	employeeStr := c.Ctx.Input.Param(":enumber")
+	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
+	if errCon != nil {
+		helpers.CheckErr("Convert employee number failed @CancelRequestLeave", errCon)
+		resp.Error = errors.New("Convert employee number failed").Error()
+		return
+	}
+
+	errUpStat := logicAdmin.CancelRequestLeave(id, employeeNumber)
+	if errUpStat != nil {
+		resp.Error = errUpStat.Error()
+	} else {
+		resp.Body = "Leave request has been canceled and deleted"
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("Failed giving output @CancelRequestLeave", err)
+	}
+}
+
 // ResetLeaveBalance ...
 func (c *AdminController) ResetLeaveBalance() {
 	var resp structAPI.RespData
 
-	errReset := logic.DBPostAdmin.ResetUserTypeLeave(11, 12)
-	errReset = logic.DBPostAdmin.ResetUserTypeLeave(22, 3)
-	errReset = logic.DBPostAdmin.ResetUserTypeLeave(33, 30)
-	errReset = logic.DBPostAdmin.ResetUserTypeLeave(44, 2)
-	errReset = logic.DBPostAdmin.ResetUserTypeLeave(55, 90)
-	errReset = logic.DBPostAdmin.ResetUserTypeLeave(66, 2)
+	errReset := logicAdmin.ResetUserTypeLeave(11, 12)
+	errReset = logicAdmin.ResetUserTypeLeave(22, 3)
+	errReset = logicAdmin.ResetUserTypeLeave(33, 30)
+	errReset = logicAdmin.ResetUserTypeLeave(44, 2)
+	errReset = logicAdmin.ResetUserTypeLeave(55, 90)
+	errReset = logicAdmin.ResetUserTypeLeave(66, 2)
 
 	if errReset != nil {
 		resp.Error = errReset.Error()

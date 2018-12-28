@@ -15,22 +15,18 @@ import (
 type Employee struct{}
 
 // GetPendingRequest ...
-func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.RequestPending, error) {
+func (e *Employee) GetPendingRequest(employeeNumber int64) (reqPending []structLogic.RequestPending, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqPending    []structLogic.RequestPending
 	)
-
-	statPendingSupervisor := constant.StatusPendingInSupervisor
-	statPendingDirector := constant.StatusPendingInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorPendingRequest", errQB)
+		helpers.CheckErr("Query builder failed @GetPendingRequest", errQB)
 		return reqPending, errQB
 	}
 
@@ -44,13 +40,11 @@ func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.Reques
 		user.TableName()+".mobile_phone",
 		user.TableName()+".email",
 		user.TableName()+".role",
-		// typeLeave.TableName()+".id as type_id",
 		typeLeave.TableName()+".type_name",
 		userTypeLeave.TableName()+".leave_remaining",
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -70,10 +64,13 @@ func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.Reques
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	statPendingSupervisor := constant.StatusPendingInSupervisor
+	statPendingDirector := constant.StatusPendingInDirector
+
 	count, errRaw := o.Raw(sql, statPendingSupervisor, statPendingDirector, employeeNumber).QueryRows(&reqPending)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorPendingRequest", errRaw)
-		return reqPending, errors.New("error get leave request pending")
+		helpers.CheckErr("Failed query select @GetPendingRequest", errRaw)
+		return reqPending, errors.New("Error get leave request pending")
 	}
 	beego.Debug("Total pending request =", count)
 
@@ -81,22 +78,19 @@ func (e *Employee) GetPendingRequest(employeeNumber int64) ([]structLogic.Reques
 }
 
 // GetApprovedRequest ...
-func (e *Employee) GetApprovedRequest(employeeNumber int64) ([]structLogic.RequestAccept, error) {
+func (e *Employee) GetApprovedRequest(employeeNumber int64) (reqApprove []structLogic.RequestAccept, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqAccept     []structLogic.RequestAccept
 	)
-
-	statAcceptDirector := constant.StatusSuccessInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorPendingRequest", errQB)
-		return reqAccept, errQB
+		helpers.CheckErr("Query builder failed @GetApprovedRequest", errQB)
+		return reqApprove, errQB
 	}
 
 	qb.Select(
@@ -114,7 +108,6 @@ func (e *Employee) GetApprovedRequest(employeeNumber int64) ([]structLogic.Reque
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -134,33 +127,31 @@ func (e *Employee) GetApprovedRequest(employeeNumber int64) ([]structLogic.Reque
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
-	count, errRaw := o.Raw(sql, statAcceptDirector, employeeNumber).QueryRows(&reqAccept)
+	statApproveDirector := constant.StatusSuccessInDirector
+
+	count, errRaw := o.Raw(sql, statApproveDirector, employeeNumber).QueryRows(&reqApprove)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorPendingRequest", errRaw)
-		return reqAccept, errors.New("error get leave request pending")
+		helpers.CheckErr("Failed query select @GetApprovedRequest", errRaw)
+		return reqApprove, errors.New("Error get leave request approve")
 	}
 	beego.Debug("Total approved request =", count)
 
-	return reqAccept, errRaw
+	return reqApprove, errRaw
 }
 
 // GetRejectedRequest ...
-func (e *Employee) GetRejectedRequest(employeeNumber int64) ([]structLogic.RequestReject, error) {
+func (e *Employee) GetRejectedRequest(employeeNumber int64) (reqReject []structLogic.RequestReject, err error) {
 	var (
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
-		reqReject     []structLogic.RequestReject
 	)
-
-	statRejectSupervisor := constant.StatusRejectInSuperVisor
-	statRejectDirector := constant.StatusRejectInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorPendingRequest", errQB)
+		helpers.CheckErr("Query builder failed @GetRejectedRequest", errQB)
 		return reqReject, errQB
 	}
 
@@ -179,7 +170,6 @@ func (e *Employee) GetRejectedRequest(employeeNumber int64) ([]structLogic.Reque
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -200,10 +190,13 @@ func (e *Employee) GetRejectedRequest(employeeNumber int64) ([]structLogic.Reque
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	statRejectSupervisor := constant.StatusRejectInSuperVisor
+	statRejectDirector := constant.StatusRejectInDirector
+
 	count, errRaw := o.Raw(sql, statRejectSupervisor, statRejectDirector, employeeNumber).QueryRows(&reqReject)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorPendingRequest", errRaw)
-		return reqReject, errors.New("error get leave request pending")
+		helpers.CheckErr("Failed query select @GetRejectedRequest", errRaw)
+		return reqReject, errors.New("Error get leave request reject")
 	}
 	beego.Debug("Total rejected request =", count)
 

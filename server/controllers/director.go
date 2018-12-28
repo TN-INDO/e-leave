@@ -7,7 +7,7 @@ import (
 	"server/helpers"
 	"strconv"
 
-	db "server/models/db/pgsql/director"
+	logicDirector "server/models/logic/director"
 	structAPI "server/structs/api"
 	structDB "server/structs/db"
 
@@ -19,99 +19,11 @@ type DirectorController struct {
 	beego.Controller
 }
 
-// AcceptStatusByDirector ...
-func (c *DirectorController) AcceptStatusByDirector() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
-
-	idStr := c.Ctx.Input.Param(":id")
-	id, errCon := strconv.ParseInt(idStr, 0, 64)
-	if errCon != nil {
-		helpers.CheckErr("convert id failed @AcceptStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
-		return
-	}
-
-	employeeStr := c.Ctx.Input.Param(":enumber")
-	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
-	if errCon != nil {
-		helpers.CheckErr("convert enum failed @AcceptStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
-		return
-	}
-
-	errUpStat := dbDirector.AcceptByDirector(id, employeeNumber)
-	if errUpStat != nil {
-		resp.Error = errUpStat.Error()
-	} else {
-		resp.Body = "Leave request has been approved"
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @AcceptStatusByDirector", err)
-	}
-}
-
-// RejectStatusByDirector ...
-func (c *DirectorController) RejectStatusByDirector() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-		leave      structDB.LeaveRequest
-	)
-
-	body := c.Ctx.Input.RequestBody
-	fmt.Println("REJECT-REASON=======>", string(body))
-
-	errMarshal := json.Unmarshal(body, &leave)
-	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @RejectStatusByDirector", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
-		c.Ctx.Output.SetStatus(400)
-		c.Ctx.Output.JSON(resp, false, false)
-		return
-	}
-
-	idStr := c.Ctx.Input.Param(":id")
-	id, errCon := strconv.ParseInt(idStr, 0, 64)
-	if errCon != nil {
-		helpers.CheckErr("convert id failed @RejectStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
-		return
-	}
-
-	employeeStr := c.Ctx.Input.Param(":enumber")
-	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
-	if errCon != nil {
-		helpers.CheckErr("convert enum failed @RejectStatusByDirector", errCon)
-		resp.Error = errors.New("convert id failed").Error()
-		return
-	}
-
-	errUpStat := dbDirector.RejectByDirector(&leave, id, employeeNumber)
-	if errUpStat != nil {
-		resp.Error = errUpStat.Error()
-	} else {
-		resp.Body = "Leave request has been rejected"
-	}
-
-	err := c.Ctx.Output.JSON(resp, false, false)
-	if err != nil {
-		helpers.CheckErr("failed giving output @RejectStatusByDirector", err)
-	}
-}
-
 // GetDirectorPendingLeave ...
 func (c *DirectorController) GetDirectorPendingLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
+	var resp structAPI.RespData
 
-	resGet, errGetPend := dbDirector.GetDirectorPendingRequest()
+	resGet, errGetPend := logicDirector.GetEmployeePendingRequest()
 	if errGetPend != nil {
 		resp.Error = errGetPend.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -121,18 +33,15 @@ func (c *DirectorController) GetDirectorPendingLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
 // GetDirectorAcceptLeave ...
 func (c *DirectorController) GetDirectorAcceptLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
+	var resp structAPI.RespData
 
-	resGet, errGetAcc := dbDirector.GetDirectorAcceptRequest()
+	resGet, errGetAcc := logicDirector.GetEmployeeApprovedRequest()
 	if errGetAcc != nil {
 		resp.Error = errGetAcc.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -142,18 +51,15 @@ func (c *DirectorController) GetDirectorAcceptLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
 // GetDirectorRejectLeave ...
 func (c *DirectorController) GetDirectorRejectLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
+	var resp structAPI.RespData
 
-	resGet, errGetReject := dbDirector.GetDirectorRejectRequest()
+	resGet, errGetReject := logicDirector.GetEmployeeRejectedRequest()
 	if errGetReject != nil {
 		resp.Error = errGetReject.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -163,42 +69,87 @@ func (c *DirectorController) GetDirectorRejectLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetDirectorPendingLeave", err)
+		helpers.CheckErr("Failed giving output @GetDirectorPendingLeave - controller", err)
 	}
 }
 
-// CancelRequestLeave ...
-func (c *DirectorController) CancelRequestLeave() {
-	var (
-		resp       structAPI.RespData
-		dbDirector db.Director
-	)
+// AcceptStatusByDirector ...
+func (c *DirectorController) AcceptStatusByDirector() {
+	var resp structAPI.RespData
 
 	idStr := c.Ctx.Input.Param(":id")
 	id, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @CancelRequestLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @AcceptStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
 	employeeStr := c.Ctx.Input.Param(":enumber")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @CancelRequestLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert employee number failed @AcceptStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert employee number failed").Error()
 		return
 	}
 
-	errUpStat := dbDirector.CancelRequestLeave(id, employeeNumber)
+	errUpStat := logicDirector.ApproveByDirector(id, employeeNumber)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {
-		resp.Body = "Leave request has been canceled and deleted"
+		resp.Body = "Leave request has been approved"
 	}
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @CancelRequestLeave", err)
+		helpers.CheckErr("Failed giving output @AcceptStatusByDirector - controller", err)
+	}
+}
+
+// RejectStatusByDirector ...
+func (c *DirectorController) RejectStatusByDirector() {
+	var (
+		resp  structAPI.RespData
+		leave structDB.LeaveRequest
+	)
+
+	body := c.Ctx.Input.RequestBody
+	fmt.Println("REJECT-REASON=======>", string(body))
+
+	errMarshal := json.Unmarshal(body, &leave)
+	if errMarshal != nil {
+		helpers.CheckErr("Failed unmarshall req body @RejectStatusByDirector - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
+		c.Ctx.Output.SetStatus(400)
+		c.Ctx.Output.JSON(resp, false, false)
+		return
+	}
+
+	idStr := c.Ctx.Input.Param(":id")
+	id, errCon := strconv.ParseInt(idStr, 0, 64)
+	if errCon != nil {
+		helpers.CheckErr("Convert id failed @RejectStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
+		return
+	}
+
+	employeeStr := c.Ctx.Input.Param(":enumber")
+	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
+	if errCon != nil {
+		helpers.CheckErr("Convert employee number failed @RejectStatusByDirector - controller", errCon)
+		resp.Error = errors.New("Convert employee number failed").Error()
+		return
+	}
+
+	errUpStat := logicDirector.RejectByDirector(&leave, id, employeeNumber)
+	if errUpStat != nil {
+		resp.Error = errUpStat.Error()
+	} else {
+		resp.Body = "Leave request has been rejected"
+	}
+
+	err := c.Ctx.Output.JSON(resp, false, false)
+	if err != nil {
+		helpers.CheckErr("Failed giving output @RejectStatusByDirector - controller", err)
 	}
 }

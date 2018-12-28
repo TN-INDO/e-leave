@@ -98,10 +98,10 @@ func CreateTableUser() {
 
 	sql := strings.Join(qb, " ")
 	beego.Debug(sql)
-	res, err := o.Raw(sql).Exec()
 
+	res, err := o.Raw(sql).Exec()
 	if err != nil {
-		beego.Warning("error creating table users", err)
+		helpers.CheckErr("error creating table users @CreateTableUser", err)
 	}
 
 	beego.Debug(res)
@@ -139,12 +139,11 @@ func CreateTableLeaveRequest() {
 
 	sql := strings.Join(qb, " ")
 	beego.Debug(sql)
+
 	res, err := o.Raw(sql).Exec()
-
 	if err != nil {
-		beego.Warning("error creating table leave_request", err)
+		helpers.CheckErr("error creating table leave_request @CreateTableLeaveRequest", err)
 	}
-
 	beego.Debug(res)
 }
 
@@ -165,12 +164,11 @@ func CreateTableTypeLeave() {
 
 	sql := strings.Join(qb, " ")
 	beego.Debug(sql)
+
 	res, err := o.Raw(sql).Exec()
-
 	if err != nil {
-		beego.Warning("error creating table type_leave", err)
+		helpers.CheckErr("error creating table type_leave @CreateTableTypeLeave", err)
 	}
-
 	beego.Debug(res)
 }
 
@@ -195,12 +193,11 @@ func CreateTableUserTypeLeave() {
 
 	sql := strings.Join(qb, " ")
 	beego.Debug(sql)
+
 	res, err := o.Raw(sql).Exec()
-
 	if err != nil {
-		beego.Warning("error creating table user_type_leave", err)
+		helpers.CheckErr("error creating table user_type_leave @CreateTableUserTypeLeave", err)
 	}
-
 	beego.Debug(res)
 }
 
@@ -214,28 +211,29 @@ func MigrateData(param string) {
 
 		raw, err := ioutil.ReadFile(fl)
 		if err != nil {
-			beego.Warning("failed read file seeder", err)
+			helpers.CheckErr("failed read file seeder @MigrateData", err)
 		}
 
 		err = json.Unmarshal(raw, &typeLeave)
 		if err != nil {
-			beego.Warning("failed unmarshall seeders", err)
+			helpers.CheckErr("failed unmarshall seeders @MigrateData", err)
 		}
 
 		cnt, errMulti := o.InsertMulti(len(typeLeave), typeLeave)
 		beego.Debug(cnt, errMulti)
+
 	} else if param == "users" {
 		var users []dbStruct.User
 		fl := constant.GOPATH + "/src/" + constant.GOAPP + "/database/sqlite/seeders/data_admin.json"
 
 		raw, err := ioutil.ReadFile(fl)
 		if err != nil {
-			beego.Warning("failed read file seeder", err)
+			helpers.CheckErr("failed read file seeder @MigrateData", err)
 		}
 
 		err = json.Unmarshal(raw, &users)
 		if err != nil {
-			beego.Warning("failed unmarshall seeders", err)
+			helpers.CheckErr("failed unmarshall seeders @MigrateData", err)
 		}
 
 		cnt, errMulti := o.InsertMulti(len(users), users)
@@ -255,32 +253,32 @@ func ResetDB() {
 	o := orm.NewOrm()
 	err := o.Begin()
 	if err != nil {
-		beego.Warning(err)
+		helpers.CheckErr("Error begin", err)
 	}
 
 	res1, errRaw1 := o.Raw(`DELETE FROM ` + user.TableName()).Exec()
 	if errRaw1 != nil {
-		beego.Warning("error reset users", errRaw1)
+		helpers.CheckErr("error reset users @ResetDB", errRaw1)
 	}
 
 	res2, errRaw2 := o.Raw(`DELETE FROM ` + leave.TableName()).Exec()
 	if errRaw2 != nil {
-		beego.Warning("error reset leave_request", errRaw2)
+		helpers.CheckErr("error reset leave_request @ResetDB", errRaw2)
 	}
 
 	res3, errRaw3 := o.Raw(`DELETE FROM ` + typeLeave.TableName()).Exec()
 	if errRaw3 != nil {
-		beego.Warning("error reset type_leave", errRaw3)
+		helpers.CheckErr("error reset type_leave @ResetDB", errRaw3)
 	}
 
-	res4, errRaw3 := o.Raw(`DELETE FROM ` + userTypeLeave.TableName()).Exec()
-	if errRaw3 != nil {
-		beego.Warning("error reset user_type_leave", errRaw3)
+	res4, errRaw4 := o.Raw(`DELETE FROM ` + userTypeLeave.TableName()).Exec()
+	if errRaw4 != nil {
+		helpers.CheckErr("error reset user_type_leave @ResetDB", errRaw4)
 	}
 
 	err = o.Commit()
 	if err != nil {
-		beego.Warning(err)
+		helpers.CheckErr("Error commit", err)
 	}
 
 	beego.Debug(res1, res2, res3, res4)

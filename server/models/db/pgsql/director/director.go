@@ -4,12 +4,8 @@ import (
 	"errors"
 	"server/helpers"
 	"server/helpers/constant"
-	logicAdmin "server/models/db/pgsql/admin"
-	logicLeave "server/models/db/pgsql/leave_request"
-	logicUser "server/models/db/pgsql/user"
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
-	"strconv"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
@@ -18,100 +14,19 @@ import (
 // Director ...
 type Director struct{}
 
-// AcceptByDirector ...
-func (u *Director) AcceptByDirector(id int64, employeeNumber int64) (err error) {
+// GetEmployeePending ...
+func (u *Director) GetEmployeePending() (reqPending []structLogic.RequestPending, err error) {
 	var (
-		dbLeave structDB.LeaveRequest
-		user    logicUser.User
-		leave   logicLeave.LeaveRequest
-		admin   logicAdmin.Admin
-	)
-
-	o := orm.NewOrm()
-
-	getDirector, errGetDirector := user.GetDirector()
-	helpers.CheckErr("err get", errGetDirector)
-
-	getEmployee, errGetEmployee := user.GetEmployee(employeeNumber)
-	helpers.CheckErr("err get", errGetEmployee)
-
-	getLeave, errGetLeave := leave.GetLeave(id)
-	helpers.CheckErr("err get", errGetLeave)
-
-	statAcceptDirector := constant.StatusSuccessInDirector
-	actionBy := getDirector.Name
-
-	resGet, errGet := user.GetUserLeaveRemaining(getLeave.TypeLeaveID, employeeNumber)
-	helpers.CheckErr("err get", errGet)
-
-	strTotal := strconv.FormatFloat(getLeave.Total, 'f', 1, 64)
-	strBalance := strconv.FormatFloat(resGet.LeaveRemaining, 'f', 1, 64)
-
-	if getLeave.Total > float64(resGet.LeaveRemaining) {
-		beego.Warning("error leave balance @PostLeaveRequest")
-		return errors.New("Employee total leave is " + strTotal + " day and employee " + resGet.TypeName + " balance is " + strBalance + " day left")
-	} else {
-		_, errRAW := o.Raw(`UPDATE `+dbLeave.TableName()+` SET status = ?, action_by = ? WHERE id = ? AND employee_number = ?`, statAcceptDirector, actionBy, id, employeeNumber).Exec()
-		if errRAW != nil {
-			helpers.CheckErr("error update status @AcceptByDirector", errRAW)
-		}
-
-		errUp := admin.UpdateLeaveRemaning(getLeave.Total, employeeNumber, getLeave.TypeLeaveID)
-		if errUp != nil {
-			helpers.CheckErr("error update status @AcceptByDirector", errUp)
-		}
-
-		helpers.GoMailDirectorAccept(getEmployee.Email, getLeave.ID, getEmployee.Name, getDirector.Name)
-
-		return errRAW
-	}
-
-	return
-}
-
-// RejectByDirector ...
-func (u *Director) RejectByDirector(l *structDB.LeaveRequest, id int64, employeeNumber int64) error {
-
-	var (
-		dbLeave structDB.LeaveRequest
-		user    logicUser.User
-		leave   logicLeave.LeaveRequest
-	)
-
-	o := orm.NewOrm()
-
-	getDirector, _ := user.GetDirector()
-	getEmployee, _ := user.GetEmployee(employeeNumber)
-	getLeave, _ := leave.GetLeave(id)
-
-	statRejectDirector := constant.StatusRejectInDirector
-	actionBy := getDirector.Name
-	rejectReason := l.RejectReason
-
-	_, errRAW := o.Raw(`UPDATE `+dbLeave.TableName()+` SET status = ?, reject_reason = ?, action_by = ? WHERE id = ? AND employee_number = ?`, statRejectDirector, rejectReason, actionBy, id, employeeNumber).Exec()
-	if errRAW != nil {
-		helpers.CheckErr("error update status @RejectByDirector", errRAW)
-	}
-	helpers.GoMailDirectorReject(getEmployee.Email, getLeave.ID, getEmployee.Name, getDirector.Name, rejectReason)
-
-	return errRAW
-}
-
-// GetDirectorPendingRequest ...
-func (u *Director) GetDirectorPendingRequest() ([]structLogic.RequestPending, error) {
-	var (
-		reqPending    []structLogic.RequestPending
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
 
-	statPendingDirector := constant.StatusPendingInDirector
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorPendingRequest", errQB)
+		helpers.CheckErr("Query builder failed @GetEmployeePending", errQB)
 		return reqPending, errQB
 	}
 
@@ -130,7 +45,6 @@ func (u *Director) GetDirectorPendingRequest() ([]structLogic.RequestPending, er
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -150,32 +64,32 @@ func (u *Director) GetDirectorPendingRequest() ([]structLogic.RequestPending, er
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	statPendingDirector := constant.StatusPendingInDirector
+
 	count, errRaw := o.Raw(sql, statPendingDirector).QueryRows(&reqPending)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorPendingRequest", errRaw)
-		return reqPending, errors.New("error get leave request pending")
+		helpers.CheckErr("Failed query select @GetEmployeePending", errRaw)
+		return reqPending, errors.New("Error get leave request pending")
 	}
 	beego.Debug("Total pending request =", count)
 
 	return reqPending, errRaw
 }
 
-// GetDirectorAcceptRequest ...
-func (u *Director) GetDirectorAcceptRequest() ([]structLogic.RequestAccept, error) {
+// GetEmployeeApproved ...
+func (u *Director) GetEmployeeApproved() (reqApprove []structLogic.RequestAccept, err error) {
 	var (
-		reqAccept     []structLogic.RequestAccept
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
-	statAcceptDirector := constant.StatusSuccessInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorAcceptRequest", errQB)
-		return reqAccept, errQB
+		helpers.CheckErr("Query builder failed @GetEmployeeApproved", errQB)
+		return reqApprove, errQB
 	}
 
 	qb.Select(
@@ -193,7 +107,6 @@ func (u *Director) GetDirectorAcceptRequest() ([]structLogic.RequestAccept, erro
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -213,31 +126,31 @@ func (u *Director) GetDirectorAcceptRequest() ([]structLogic.RequestAccept, erro
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
-	count, errRaw := o.Raw(sql, statAcceptDirector).QueryRows(&reqAccept)
-	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorAcceptRequest", errRaw)
-		return reqAccept, errors.New("error get leave")
-	}
-	beego.Debug("Total accept request =", count)
+	statApproveDirector := constant.StatusSuccessInDirector
 
-	return reqAccept, errRaw
+	count, errRaw := o.Raw(sql, statApproveDirector).QueryRows(&reqApprove)
+	if errRaw != nil {
+		helpers.CheckErr("Failed query select @GetEmployeeApproved", errRaw)
+		return reqApprove, errors.New("Error get leave request approved")
+	}
+	beego.Debug("Total approve request =", count)
+
+	return reqApprove, errRaw
 }
 
-// GetDirectorRejectRequest ...
-func (u *Director) GetDirectorRejectRequest() ([]structLogic.RequestReject, error) {
+// GetEmployeeRejected ...
+func (u *Director) GetEmployeeRejected() (reqReject []structLogic.RequestReject, err error) {
 	var (
-		reqReject     []structLogic.RequestReject
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
-	StatRejectInDirector := constant.StatusRejectInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetDirectorRejectRequest", errQB)
+		helpers.CheckErr("Query builder failed @GetEmployeeRejected", errQB)
 		return reqReject, errQB
 	}
 
@@ -256,7 +169,6 @@ func (u *Director) GetDirectorRejectRequest() ([]structLogic.RequestReject, erro
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -277,37 +189,47 @@ func (u *Director) GetDirectorRejectRequest() ([]structLogic.RequestReject, erro
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	StatRejectInDirector := constant.StatusRejectInDirector
+
 	count, errRaw := o.Raw(sql, StatRejectInDirector).QueryRows(&reqReject)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetDirectorRejectRequest", errRaw)
-		return reqReject, errors.New("error get leave")
+		helpers.CheckErr("Failed query select @GetEmployeeRejected", errRaw)
+		return reqReject, errors.New("Error get leave request rejected")
 	}
 	beego.Debug("Total reject request =", count)
 
 	return reqReject, errRaw
 }
 
-// CancelRequestLeave ...
-func (u *Director) CancelRequestLeave(id int64, employeeNumber int64) (err error) {
-	var (
-		user  logicUser.User
-		leave logicLeave.LeaveRequest
-	)
+// ApproveByDirector ...
+func (u *Director) ApproveByDirector(id int64, employeeNumber int64, actionBy string) (err error) {
+	var dbLeave structDB.LeaveRequest
 
-	getDirector, _ := user.GetDirector()
-	getEmployee, _ := user.GetEmployee(employeeNumber)
-	getLeave, _ := leave.GetLeave(id)
+	o := orm.NewOrm()
 
-	errUp := leave.UpdateLeaveRemaningCancel(getLeave.Total, employeeNumber, getLeave.TypeLeaveID)
-	if errUp != nil {
-		helpers.CheckErr("error update status @CancelRequestLeave", errUp)
+	statAcceptDirector := constant.StatusSuccessInDirector
+
+	_, errRAW := o.Raw(`UPDATE `+dbLeave.TableName()+` SET status = ?, action_by = ? WHERE id = ? AND employee_number = ?`, statAcceptDirector, actionBy, id, employeeNumber).Exec()
+	if errRAW != nil {
+		helpers.CheckErr("Error update status success @ApproveByDirector", errRAW)
 	}
 
-	helpers.GoMailDirectorCancel(getDirector.Email, getLeave.ID, getEmployee.Name, getDirector.Name)
-	helpers.GoMailEmployeeCancel(getEmployee.Email, getLeave.ID, getEmployee.Name)
+	return errRAW
+}
 
-	errDelete := leave.DeleteRequest(id)
-	helpers.CheckErr("error delete leave request", errDelete)
+// RejectByDirector ...
+func (u *Director) RejectByDirector(l *structDB.LeaveRequest, id int64, employeeNumber int64, actionBy string) error {
+	var dbLeave structDB.LeaveRequest
 
-	return err
+	o := orm.NewOrm()
+
+	statRejectDirector := constant.StatusRejectInDirector
+	rejectReason := l.RejectReason
+
+	_, errRAW := o.Raw(`UPDATE `+dbLeave.TableName()+` SET status = ?, reject_reason = ?, action_by = ? WHERE id = ? AND employee_number = ?`, statRejectDirector, rejectReason, actionBy, id, employeeNumber).Exec()
+	if errRAW != nil {
+		helpers.CheckErr("error update status reject @RejectByDirector", errRAW)
+	}
+
+	return errRAW
 }

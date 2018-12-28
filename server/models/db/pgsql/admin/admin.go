@@ -1,7 +1,6 @@
 package admin
 
 import (
-	"encoding/base64"
 	"errors"
 	"server/helpers"
 	"server/helpers/constant"
@@ -9,12 +8,10 @@ import (
 	structDB "server/structs/db"
 	structLogic "server/structs/logic"
 
-	"strconv"
 	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Admin ...
@@ -22,45 +19,57 @@ type Admin struct{}
 
 // AddUser ...
 func (u *Admin) AddUser(user structDB.User) error {
-	var count int
-	var countEmployeeNumber int
 	o := orm.NewOrm()
 
-	o.Raw(`SELECT count(*) as Count FROM `+user.TableName()+` WHERE email = ?`, user.Email).QueryRow(&count)
-	o.Raw(`SELECT count(*) as Count FROM `+user.TableName()+` WHERE employee_number = ?`, user.EmployeeNumber).QueryRow(&countEmployeeNumber)
-
-	passwordString := user.Password
-
-	bsEmployeeNumber := []byte(strconv.Itoa(int(user.EmployeeNumber)))
-	arrPassword := []byte(passwordString)
-
-	if len(bsEmployeeNumber) != 5 {
-		return errors.New("Employee number must field and length must be 5")
-	} else if countEmployeeNumber > 0 {
-		return errors.New("Employee number already register")
-	} else if user.Name == "" || user.Gender == "" || user.Position == "" || user.StartWorkingDate == "" || user.MobilePhone == "" || user.Email == "" || user.Password == "" || user.Role == "" {
-		return errors.New("Error empty field ")
-	} else if count > 0 {
-		return errors.New("Email already register")
-	} else if len(arrPassword) < 7 {
-		return errors.New("Password length must be 7")
-	} else {
-		hashedBytes, errHash := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
-		helpers.CheckErr("error hash password @AddUser", errHash)
-
-		user.Email = strings.ToLower(user.Email)
-		user.Password = base64.StdEncoding.EncodeToString(hashedBytes)
-
-		_, err := o.Insert(&user)
-		if err != nil {
-			helpers.CheckErr("error insert @AddUser", err)
-			return errors.New("insert users failed")
-		}
-
-		defer helpers.GoMailRegisterPassword(user.Email, passwordString)
-
-		return err
+	_, err := o.Insert(&user)
+	if err != nil {
+		helpers.CheckErr("Error insert @AddUser", err)
+		return errors.New("Insert users failed")
 	}
+
+	return err
+}
+
+// GetUsers ...
+func (u *Admin) GetUsers() (users []structDB.User, err error) {
+	var (
+		dbUser structDB.User
+		roles  []string
+	)
+	roles = append(roles, "employee", "supervisor", "director")
+
+	o := orm.NewOrm()
+	count, err := o.Raw("SELECT * FROM "+dbUser.TableName()+" WHERE role IN (?,?,?)", roles).QueryRows(&users)
+	if err != nil {
+		helpers.CheckErr("Failed get users @GetUsers", err)
+		return users, err
+	}
+	beego.Debug("Total user =", count)
+
+	return users, err
+}
+
+// GetUser ...
+func (u *Admin) GetUser(employeeNumber int64) (user structDB.User, err error) {
+	o := orm.NewOrm()
+	qb, errQB := orm.NewQueryBuilder("mysql")
+	if errQB != nil {
+		helpers.CheckErr("Query builder failed @GetUser", errQB)
+		return user, errQB
+	}
+
+	qb.Select("*").From(user.TableName()).
+		Where(`employee_number = ? `)
+	qb.Limit(1)
+	sql := qb.String()
+
+	errRaw := o.Raw(sql, employeeNumber).QueryRow(&user)
+	if errRaw != nil {
+		helpers.CheckErr("Failed query select item @GetUser", errRaw)
+		return user, errors.New("Employee number not exist")
+	}
+
+	return user, err
 }
 
 // DeleteUser ...
@@ -74,56 +83,16 @@ func (u *Admin) DeleteUser(employeeNumber int64) (err error) {
 		if num, err = o.Delete(&structDB.User{EmployeeNumber: employeeNumber}); err == nil {
 			beego.Debug("Number of records deleted in database:", num)
 		} else if err != nil {
-			helpers.CheckErr("error deleted user @DeleteUser", err)
-			return errors.New("error deleted user")
+			helpers.CheckErr("Error delete user @DeleteUser", err)
+			return errors.New("Error delete user")
 		}
 	}
 	if err != nil {
-		helpers.CheckErr("error deleted user @DeleteUser", err)
+		helpers.CheckErr("Error delete user @DeleteUser", err)
 		return errors.New("Delete failed, id not exist")
 	}
+
 	return err
-}
-
-// GetUsers ...
-func (u *Admin) GetUsers() (result []structDB.User, err error) {
-	var (
-		dbUser structDB.User
-		roles  []string
-	)
-	roles = append(roles, "employee", "supervisor", "director")
-
-	o := orm.NewOrm()
-	count, err := o.Raw("SELECT * FROM "+dbUser.TableName()+" WHERE role IN (?,?,?)", roles).QueryRows(&result)
-	if err != nil {
-		helpers.CheckErr("Failed get users @GetUsers", err)
-		return result, err
-	}
-	beego.Debug("Total user =", count)
-
-	return result, err
-}
-
-// GetUser ...
-func (u *Admin) GetUser(employeeNumber int64) (result structDB.User, err error) {
-	o := orm.NewOrm()
-	qb, errQB := orm.NewQueryBuilder("mysql")
-	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetUser", errQB)
-		return result, errQB
-	}
-
-	qb.Select("*").From(result.TableName()).
-		Where(`employee_number = ? `)
-	qb.Limit(1)
-	sql := qb.String()
-
-	errRaw := o.Raw(sql, employeeNumber).QueryRow(&result)
-	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select item @GetUser", errRaw)
-		return result, errors.New("employeeNumber not exist")
-	}
-	return result, err
 }
 
 // UpdateUser ...
@@ -174,13 +143,13 @@ func (u *Admin) UpdateUser(e *structDB.User, employeeNumber int64) (err error) {
 				employeeNumber).Exec()
 
 			if errRaw != nil {
-				helpers.CheckErr("err update @UpdateUser", errRaw)
-				return errors.New("update user failed")
+				helpers.CheckErr("Error update user @UpdateUser", errRaw)
+				return errors.New("Update user failed")
 			}
 
 			_, errRow := res.RowsAffected()
 			if errRow != nil {
-				helpers.CheckErr("error get rows affected", errRow)
+				helpers.CheckErr("Error get rows affected @UpdateUser", errRow)
 				return errRow
 			}
 		}
@@ -212,13 +181,13 @@ func (u *Admin) UpdateUser(e *structDB.User, employeeNumber int64) (err error) {
 			employeeNumber).Exec()
 
 		if errRaw != nil {
-			helpers.CheckErr("err update @UpdateUser", errRaw)
-			return errors.New("update user failed")
+			helpers.CheckErr("Error update user @UpdateUser", errRaw)
+			return errors.New("Update user failed")
 		}
 
 		_, errRow := res.RowsAffected()
 		if errRow != nil {
-			helpers.CheckErr("error get rows affected", errRow)
+			helpers.CheckErr("Error get rows affected @UpdateUser", errRow)
 			return errRow
 		}
 	}
@@ -227,16 +196,13 @@ func (u *Admin) UpdateUser(e *structDB.User, employeeNumber int64) (err error) {
 }
 
 // GetLeaveRequestPending ...
-func (u *Admin) GetLeaveRequestPending() ([]structLogic.RequestPending, error) {
+func (u *Admin) GetLeaveRequestPending() (reqPending []structLogic.RequestPending, err error) {
 	var (
-		reqPending    []structLogic.RequestPending
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
-	statPendingInSupervisor := constant.StatusPendingInSupervisor
-	statPendingInDirector := constant.StatusPendingInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
@@ -260,7 +226,6 @@ func (u *Admin) GetLeaveRequestPending() ([]structLogic.RequestPending, error) {
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -280,32 +245,33 @@ func (u *Admin) GetLeaveRequestPending() ([]structLogic.RequestPending, error) {
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	statPendingInSupervisor := constant.StatusPendingInSupervisor
+	statPendingInDirector := constant.StatusPendingInDirector
+
 	count, errRaw := o.Raw(sql, statPendingInSupervisor, statPendingInDirector).QueryRows(&reqPending)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetLeaveRequestPending", errRaw)
-		return reqPending, errors.New("error get leave")
+		helpers.CheckErr("Failed query select @GetLeaveRequestPending", errRaw)
+		return reqPending, errors.New("Error get leave request pending")
 	}
 	beego.Debug("Total pending request =", count)
 
 	return reqPending, errRaw
 }
 
-// GetLeaveRequest ...
-func (u *Admin) GetLeaveRequest() ([]structLogic.RequestAccept, error) {
+// GetLeaveRequestApproved ...
+func (u *Admin) GetLeaveRequestApproved() (reqApprove []structLogic.RequestAccept, err error) {
 	var (
-		reqAccept     []structLogic.RequestAccept
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
-	statAcceptDirector := constant.StatusSuccessInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetLeaveRequest", errQB)
-		return reqAccept, errQB
+		helpers.CheckErr("Query builder failed @GetLeaveRequestApproved", errQB)
+		return reqApprove, errQB
 	}
 
 	qb.Select(
@@ -323,7 +289,6 @@ func (u *Admin) GetLeaveRequest() ([]structLogic.RequestAccept, error) {
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -341,35 +306,33 @@ func (u *Admin) GetLeaveRequest() ([]structLogic.RequestAccept, error) {
 		And(userTypeLeave.TableName() + ".employee_number" + "=" + leave.TableName() + ".employee_number").
 		Where(`status = ? `).
 		OrderBy(leave.TableName() + ".created_at DESC")
-
 	sql := qb.String()
 
-	count, errRaw := o.Raw(sql, statAcceptDirector).QueryRows(&reqAccept)
-	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetLeaveRequest", errRaw)
-		return reqAccept, errors.New("error get leave")
-	}
-	beego.Debug("Total accept request =", count)
+	statApproveDirector := constant.StatusSuccessInDirector
 
-	return reqAccept, errRaw
+	count, errRaw := o.Raw(sql, statApproveDirector).QueryRows(&reqApprove)
+	if errRaw != nil {
+		helpers.CheckErr("Failed query select @GetLeaveRequestApproved", errRaw)
+		return reqApprove, errors.New("Error get leave request approved")
+	}
+	beego.Debug("Total approved request =", count)
+
+	return reqApprove, errRaw
 }
 
-// GetLeaveRequestReject ...
-func (u *Admin) GetLeaveRequestReject() ([]structLogic.RequestReject, error) {
+// GetLeaveRequestRejected ...
+func (u *Admin) GetLeaveRequestRejected() (reqReject []structLogic.RequestReject, err error) {
 	var (
-		reqReject     []structLogic.RequestReject
 		user          structDB.User
 		leave         structDB.LeaveRequest
 		typeLeave     structDB.TypeLeave
 		userTypeLeave structDB.UserTypeLeave
 	)
-	statRejectInSuperVisor := constant.StatusRejectInSuperVisor
-	statRejectInDirector := constant.StatusRejectInDirector
 
 	o := orm.NewOrm()
 	qb, errQB := orm.NewQueryBuilder("mysql")
 	if errQB != nil {
-		helpers.CheckErr("Query builder failed @GetLeaveRequestReject", errQB)
+		helpers.CheckErr("Query builder failed @GetLeaveRequestRejected", errQB)
 		return reqReject, errQB
 	}
 
@@ -388,7 +351,6 @@ func (u *Admin) GetLeaveRequestReject() ([]structLogic.RequestReject, error) {
 		leave.TableName()+".reason",
 		leave.TableName()+".date_from",
 		leave.TableName()+".date_to",
-		// "array_to_string("+leave.TableName()+".half_dates, ', ') as half_dates",
 		leave.TableName()+".half_dates",
 		leave.TableName()+".total",
 		leave.TableName()+".back_on",
@@ -409,82 +371,21 @@ func (u *Admin) GetLeaveRequestReject() ([]structLogic.RequestReject, error) {
 		OrderBy(leave.TableName() + ".created_at DESC")
 	sql := qb.String()
 
+	statRejectInSuperVisor := constant.StatusRejectInSuperVisor
+	statRejectInDirector := constant.StatusRejectInDirector
+
 	count, errRaw := o.Raw(sql, statRejectInSuperVisor, statRejectInDirector).QueryRows(&reqReject)
 	if errRaw != nil {
-		helpers.CheckErr("Failed Query Select @GetLeaveRequestReject", errRaw)
-		return reqReject, errors.New("error get leave")
+		helpers.CheckErr("Failed query select @GetLeaveRequestRejected", errRaw)
+		return reqReject, errors.New("Error get leave request reject")
 	}
 	beego.Debug("Total reject request =", count)
 
 	return reqReject, errRaw
 }
 
-// CreateUserTypeLeave ...
-func (u *Admin) CreateUserTypeLeave(employeeNumber int64,
-	typeLeaveID int64,
-	leaveRemaining float64) error {
-
-	var typeLeave structDB.UserTypeLeave
-
-	o := orm.NewOrm()
-	qb, errQB := orm.NewQueryBuilder("mysql")
-	if errQB != nil {
-		helpers.CheckErr("Query builder failed @CreateUserTypeLeave", errQB)
-		return errQB
-	}
-
-	qb.InsertInto(
-		typeLeave.TableName(),
-		"employee_number",
-		"type_leave_id",
-		"leave_remaining").
-		Values("?, ?, ?")
-	sql := qb.String()
-
-	values := []interface{}{employeeNumber,
-		typeLeaveID,
-		leaveRemaining}
-	_, err := o.Raw(sql, values).Exec()
-	if err != nil {
-		helpers.CheckErr("error insert @CreateUserTypeLeave", err)
-		return errors.New("insert create leave request failed")
-	}
-	return err
-}
-
-// UpdateLeaveRemaning ...
-func (u *Admin) UpdateLeaveRemaning(total float64, employeeNumber int64, typeID int64) (err error) {
-	var e *structDB.UserTypeLeave
-	o := orm.NewOrm()
-	qb, errQB := orm.NewQueryBuilder("mysql")
-	if errQB != nil {
-		helpers.CheckErr("Query builder failed @UpdateLeaveRemaning", errQB)
-		return errQB
-	}
-
-	qb.Update(e.TableName()).Set("leave_remaining = leave_remaining - ?").
-		Where(`(employee_number = ? AND type_leave_id = ? )`)
-	sql := qb.String()
-
-	res, errRaw := o.Raw(sql, total, employeeNumber, typeID).Exec()
-
-	if errRaw != nil {
-		helpers.CheckErr("err update @UpdateLeaveRemaning", errRaw)
-		return errors.New("update leave remaining failed")
-	}
-
-	_, errRow := res.RowsAffected()
-	if errRow != nil {
-		helpers.CheckErr("error get rows affected", errRow)
-		return errRow
-	}
-
-	return err
-}
-
 // ResetUserTypeLeave ...
-func (u *Admin) ResetUserTypeLeave(
-	leaveRemaining float64, typeLeaveID int64) error {
+func (u *Admin) ResetUserTypeLeave(leaveRemaining float64, typeLeaveID int64) error {
 	var typeLeave structDB.UserTypeLeave
 
 	o := orm.NewOrm()
@@ -502,12 +403,12 @@ func (u *Admin) ResetUserTypeLeave(
 
 	res, errRaw := o.Raw(sql, leaveRemaining, typeLeaveID).Exec()
 	if errRaw != nil {
-		helpers.CheckErr("err update @ResetUserTypeLeave", errRaw)
-		return errors.New("update request failed")
+		helpers.CheckErr("Error update leave balance @ResetUserTypeLeave", errRaw)
+		return errors.New("Reset leave balance failed")
 	}
 
 	_, errRow := res.RowsAffected()
-	helpers.CheckErr("error get rows affected", errRow)
+	helpers.CheckErr("Error get rows affected @ResetUserTypeLeave", errRow)
 
 	return errRow
 }
@@ -538,12 +439,12 @@ func (u *Admin) UpdateUserTypeLeave(
 
 	res, errRaw := o.Raw(sql, leaveRemaining, typeLeaveID, employeeNumber).Exec()
 	if errRaw != nil {
-		helpers.CheckErr("err update @UpdateUserTypeLeave", errRaw)
-		return errors.New("update request failed")
+		helpers.CheckErr("Error update @UpdateUserTypeLeave", errRaw)
+		return errors.New("Update request failed")
 	}
 
 	_, errRow := res.RowsAffected()
-	helpers.CheckErr("error get rows affected", errRow)
+	helpers.CheckErr("Error get rows affected @UpdateUserTypeLeave", errRow)
 
 	return errRow
 }

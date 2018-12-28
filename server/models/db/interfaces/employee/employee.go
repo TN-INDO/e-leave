@@ -8,17 +8,17 @@ import (
 type IBaseEmployee interface {
 	// GetPendingRequest
 	GetPendingRequest(employeeNumber int64) (
-		[]structLogic.RequestPending,
-		error,
+		reqPending []structLogic.RequestPending,
+		err error,
 	)
 	// GetApprovedRequest
 	GetApprovedRequest(employeeNumber int64) (
-		[]structLogic.RequestAccept,
-		error,
+		reqApprove []structLogic.RequestAccept,
+		err error,
 	)
 	// GetRejectedRequest
 	GetRejectedRequest(employeeNumber int64) (
-		[]structLogic.RequestReject,
-		error,
+		reqReject []structLogic.RequestReject,
+		err error,
 	)
 }

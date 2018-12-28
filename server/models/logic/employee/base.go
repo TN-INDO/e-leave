@@ -7,9 +7,9 @@ import (
 
 // constant var
 var (
-	DBPostEmployee dbInterfaceEmployee.IBaseEmployee
+	DBEmployee dbInterfaceEmployee.IBaseEmployee
 )
 
 func init() {
-	DBPostEmployee = new(dbLayerEmployee.Employee)
+	DBEmployee = new(dbLayerEmployee.Employee)
 }

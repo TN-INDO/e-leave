@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	logic "server/models/logic/user"
+	logicUser "server/models/logic/user"
 	structAPI "server/structs/api"
 	structLogic "server/structs/logic"
 
@@ -21,21 +22,21 @@ type UserController struct {
 // Login ...
 func (c *UserController) Login() {
 	var (
-		resp     structAPI.RespData
 		reqLogin structAPI.ReqLogin
+		resp     structAPI.RespData
 	)
 
 	body := c.Ctx.Input.RequestBody
 
 	err := json.Unmarshal(body, &reqLogin)
 	if err != nil {
-		helpers.CheckErr("unmarshall req body failed @Login", err)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body @Login - controller", err)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
 
-	result, errLogin := logic.DBPostUser.GetJWT(&reqLogin)
+	result, errLogin := logicUser.UserLogin(&reqLogin)
 	if errLogin != nil {
 		resp.Error = errLogin.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -45,7 +46,7 @@ func (c *UserController) Login() {
 
 	err = c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @Login", err)
+		helpers.CheckErr("Failed giving output @Login - controller", err)
 	}
 }
 
@@ -60,23 +61,23 @@ func (c *UserController) PasswordReset() {
 
 	errMarshal := json.Unmarshal(body, &dbUser)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @PasswordReset", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("Failed unmarshall req body failed @PasswordReset - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
 	}
 
-	errUpStat := logic.DBPostUser.ForgotPassword(&dbUser)
+	errUpStat := logicUser.ForgotPassword(&dbUser)
 	if errUpStat != nil {
 		resp.Error = errUpStat.Error()
 	} else {
-		resp.Body = "reset password success, please check your email"
+		resp.Body = "Reset password success, please check your email"
 	}
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @PasswordReset", err)
+		helpers.CheckErr("Failed giving output @PasswordReset - controller", err)
 	}
 }
 
@@ -91,8 +92,8 @@ func (c *UserController) UpdateNewPassword() {
 
 	errMarshal := json.Unmarshal(body, &newPwd)
 	if errMarshal != nil {
-		helpers.CheckErr("unmarshall req body failed @UpdateNewPassword", errMarshal)
-		resp.Error = errors.New("type request malform").Error()
+		helpers.CheckErr("uFailed nmarshall req body @UpdateNewPassword - controller", errMarshal)
+		resp.Error = errors.New("Type request malform").Error()
 		c.Ctx.Output.SetStatus(400)
 		c.Ctx.Output.JSON(resp, false, false)
 		return
@@ -101,8 +102,8 @@ func (c *UserController) UpdateNewPassword() {
 	employeeStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(employeeStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert enum failed @UpdateNewPassword", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @UpdateNewPassword - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
@@ -115,24 +116,23 @@ func (c *UserController) UpdateNewPassword() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @UpdateNewPassword", err)
+		helpers.CheckErr("Failed giving output @UpdateNewPassword - controller", err)
 	}
 }
 
 // GetUserSummary ...
 func (c *UserController) GetUserSummary() {
-	var (
-		resp structAPI.RespData
-	)
+	var resp structAPI.RespData
+
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetUserSummary", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetUserSummary - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
-	resGet, errGetSummary := logic.DBPostUser.GetSumarry(employeeNumber)
+	resGet, errGetSummary := logicUser.GetSumarry(employeeNumber)
 	if errGetSummary != nil {
 		resp.Error = errGetSummary.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -142,24 +142,23 @@ func (c *UserController) GetUserSummary() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUserSummary", err)
+		helpers.CheckErr("Failed giving output @GetUserSummary - controller", err)
 	}
 }
 
 // GetUserTypeLeave ...
 func (c *UserController) GetUserTypeLeave() {
-	var (
-		resp structAPI.RespData
-	)
+	var resp structAPI.RespData
+
 	idStr := c.Ctx.Input.Param(":id")
 	employeeNumber, errCon := strconv.ParseInt(idStr, 0, 64)
 	if errCon != nil {
-		helpers.CheckErr("convert id failed @GetUserTypeLeave", errCon)
-		resp.Error = errors.New("convert id failed").Error()
+		helpers.CheckErr("Convert id failed @GetUserTypeLeave - controller", errCon)
+		resp.Error = errors.New("Convert id failed").Error()
 		return
 	}
 
-	resGet, errGet := logic.DBPostUser.GetUserTypeLeave(employeeNumber)
+	resGet, errGet := logicUser.GetUserTypeLeave(employeeNumber)
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -169,7 +168,7 @@ func (c *UserController) GetUserTypeLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetUserTypeLeave", err)
+		helpers.CheckErr("Failed giving output @GetUserTypeLeave - controller", err)
 	}
 }
 
@@ -177,7 +176,7 @@ func (c *UserController) GetUserTypeLeave() {
 func (c *UserController) GetSupervisors() {
 	var resp structAPI.RespData
 
-	res, errGet := logic.DBPostUser.GetSupervisors()
+	res, errGet := logicUser.GetSupervisors()
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -187,14 +186,15 @@ func (c *UserController) GetSupervisors() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetSupervisors", err)
+		helpers.CheckErr("Failed giving output @GetSupervisors - controller", err)
 	}
 }
 
 // GetTypeLeave ...
 func (c *UserController) GetTypeLeave() {
 	var resp structAPI.RespData
-	res, errGet := logic.DBPostUser.GetTypeLeave()
+
+	res, errGet := logicUser.GetTypeLeave()
 	if errGet != nil {
 		resp.Error = errGet.Error()
 		c.Ctx.Output.SetStatus(400)
@@ -204,6 +204,6 @@ func (c *UserController) GetTypeLeave() {
 
 	err := c.Ctx.Output.JSON(resp, false, false)
 	if err != nil {
-		helpers.CheckErr("failed giving output @GetTypeLeave", err)
+		helpers.CheckErr("Failed giving output @GetTypeLeave - controller", err)
 	}
 }

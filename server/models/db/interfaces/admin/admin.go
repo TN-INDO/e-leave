@@ -9,11 +9,9 @@ import (
 type IBaseAdmin interface {
 	// AddUser
 	AddUser(user structDB.User) error
-	// DeleteUser
-	DeleteUser(employeeNumber int64) error
 	// GetUsers
 	GetUsers() (
-		result []structDB.User,
+		users []structDB.User,
 		err error,
 	)
 	// GetUser
@@ -26,40 +24,25 @@ type IBaseAdmin interface {
 		e *structDB.User,
 		employeeNumber int64,
 	) (err error)
+	// DeleteUser
+	DeleteUser(employeeNumber int64) error
+
 	// GetLeaveRequest
 	GetLeaveRequestPending() (
-		[]structLogic.RequestPending,
-		error,
+		reqPending []structLogic.RequestPending,
+		err error,
 	)
-	// GetLeaveRequest
-	GetLeaveRequest() (
-		[]structLogic.RequestAccept,
-		error,
+	// GetLeaveRequestApproved
+	GetLeaveRequestApproved() (
+		reqApprove []structLogic.RequestAccept,
+		err error,
 	)
-	// GetLeaveRequest
-	GetLeaveRequestReject() (
-		[]structLogic.RequestReject,
-		error,
+	// GetLeaveRequested
+	GetLeaveRequestRejected() (
+		reqReject []structLogic.RequestReject,
+		err error,
 	)
-	// CreateUserTypeLeave
-	CreateUserTypeLeave(
-		employeeNumber int64,
-		typeLeaveID int64,
-		total float64,
-	) error
 
-	// CancelRequestLeave
-	// CancelRequestLeave(
-	// 	id int64,
-	// 	employeeNumber int64,
-	// ) (err error)
-
-	// UpdateLeaveRemaning
-	UpdateLeaveRemaning(
-		total float64,
-		employeeNumber int64,
-		typeID int64,
-	) (err error)
 	// ResetUserTypeLeave
 	ResetUserTypeLeave(
 		leaveRemaining float64,

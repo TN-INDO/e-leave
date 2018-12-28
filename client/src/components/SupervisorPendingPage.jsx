@@ -165,7 +165,7 @@ class SupervisorPendingPage extends Component {
     this.supervisorApproveRequest(this.props.leaves, id, employeeNumber);
     setTimeout(() => {
       this.setState({ loadingA: false, visible: false });
-    }, 3000);
+    }, 760);
   };
 
   supervisorApproveRequest = (leaves, id, enumber) => {
@@ -185,7 +185,7 @@ class SupervisorPendingPage extends Component {
     );
     setTimeout(() => {
       this.setState({ loadingR: false, visible: false, visibleReject: false });
-    }, 3000);
+    }, 760);
   };
 
   handleOnChange = e => {
